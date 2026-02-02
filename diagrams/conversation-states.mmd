@@ -1,0 +1,15 @@
+stateDiagram-v2
+    [*] --> Idle : Start session
+    Idle --> PromptSelection : User initiates
+    PromptSelection --> GatheringDetails : Choose custom or template
+    GatheringDetails --> Validating : User provides details
+    Validating --> GatheringDetails : Invalid input
+    Validating --> Processing : Valid input
+    Processing --> GeneratingMD : Build markdown
+    GeneratingMD --> Preview : Show result
+    Preview --> GatheringDetails : Request changes
+    Preview --> Completed : Confirm result
+    Completed --> [*]
+    
+    GatheringDetails --> Interrupted : Timeout
+    Interrupted --> Idle : Resume

@@ -1,0 +1,41 @@
+graph TB
+    subgraph "Frontend Layer"
+        A[Chat Interface]
+        B[Message Parser]
+        C[State Manager]
+    end
+    
+    subgraph "Processing Layer"
+        D[Prompt Validator]
+        E[Template Engine]
+        F[Markdown Formatter]
+    end
+    
+    subgraph "Data Layer"
+        G[Templates DB]
+        H[History Store]
+        I[Export Module]
+    end
+    
+    subgraph "External Services"
+        J[OpenClaw API]
+        K[AI Service]
+    end
+    
+    A --> B
+    A --> C
+    B --> D
+    B --> E
+    D --> F
+    E --> F
+    F --> I
+    E --> G
+    C --> H
+    A --> J
+    D --> K
+    E --> K
+    
+    style A fill:#cde4ff
+    style D fill:#f0e6ff
+    style F fill:#e6f7ff
+    style I fill:#e6ffe6

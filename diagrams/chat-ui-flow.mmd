@@ -1,0 +1,35 @@
+graph TD
+    A[User] --> B[Chat Interface]
+    B --> C{Input Type}
+    C -->|Text Message| D[Process Natural Language]
+    C -->|Commands| E[Execute Commands]
+    C -->|Templates| F[Load Template]
+    
+    D --> G[Parse Intent]
+    G --> H[Validate Input]
+    H --> I{Valid?}
+    I -->|Yes| J[Build Prompt Structure]
+    I -->|No| K[Request Clarification]
+    K --> B
+    
+    E --> L[Apply Settings]
+    F --> M[Populate Template]
+    
+    J --> N[Format as Markdown]
+    L --> N
+    M --> N
+    
+    N --> O[Generate MD File]
+    O --> P[Store/Export]
+    P --> Q[Return to User]
+    Q --> R[Review & Edit]
+    R --> S{Satisfied?}
+    S -->|Yes| T[Complete]
+    S -->|No| U[Feedback Loop]
+    U --> B
+    
+    style A fill:#e1f5fe
+    style T fill:#e8f5e8
+    style B fill:#fff3e0
+    style N fill:#f3e5f5
+    style O fill:#e8f5e8

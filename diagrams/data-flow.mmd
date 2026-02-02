@@ -1,0 +1,39 @@
+graph LR
+    subgraph "Input Sources"
+        A[User Messages]
+        B[Template Requests]
+        C[System Commands]
+    end
+    
+    subgraph "Processing Pipeline"
+        D[Message Parser]
+        E[Intent Classifier]
+        F[Context Handler]
+        G[Validation Engine]
+        H[Template Processor]
+        I[Markdown Builder]
+    end
+    
+    subgraph "Output Destinations"
+        J[Real-time Preview]
+        K[Markdown File]
+        L[System Responses]
+    end
+    
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    F --> H
+    G --> I
+    H --> I
+    I --> J
+    I --> K
+    I --> L
+    L --> A
+    
+    style D fill:#e1f5fe
+    style I fill:#e8f5e8
+    style K fill:#f3e5f5

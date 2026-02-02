@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant User
+    participant ChatUI as Chat UI
+    participant Processor as Prompt Processor
+    participant Generator as MD Generator
+    
+    User->>ChatUI: Start new prompt project
+    ChatUI->>User: Welcome message & options
+    User->>ChatUI: Select template or start from scratch
+    alt Start from scratch
+        ChatUI->>User: Ask for prompt purpose
+        User->>ChatUI: Describe use case
+        ChatUI->>Processor: Parse requirements
+    else Use template
+        ChatUI->>User: Show available templates
+        User->>ChatUI: Select template
+        ChatUI->>Processor: Load template
+    end
+    
+    loop Gather prompt details
+        ChatUI->>User: Ask specific questions
+        User->>ChatUI: Provide details
+        ChatUI->>Processor: Validate input
+        alt Input invalid
+            ChatUI->>User: Clarification request
+            User->>ChatUI: Corrected input
+        end
+    end
+    
+    Processor->>Generator: Compile prompt structure
+    Generator->>ChatUI: Return formatted markdown
+    ChatUI->>User: Display generated markdown
+    User->>ChatUI: Review and approve/edit
+    alt Requires changes
+        User->>ChatUI: Request modifications
+        ChatUI->>Processor: Update structure
+        Processor->>Generator: Regenerate
+        Generator->>ChatUI: Return updated markdown
+    end
+    
+    ChatUI->>User: Export options (save, copy, share)
+    User->>ChatUI: Select export method
+    ChatUI->>User: Complete markdown file

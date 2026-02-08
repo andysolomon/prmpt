@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   PromptSpec,
   createDefaultPromptSpec,
@@ -17,6 +18,15 @@ import { PresetPicker } from './PresetPicker';
 import { PreviewPanel } from './PreviewPanel';
 import { PromptWizard } from './PromptWizard';
 import { StepId } from './types';
+
+interface UndoPresetState {
+  presetName: string;
+  previousSpec: PromptSpec;
+}
+
+function cloneSpec(spec: PromptSpec): PromptSpec {
+  return JSON.parse(JSON.stringify(spec)) as PromptSpec;
+}
 
 function mergePatch(spec: PromptSpec, patch: Partial<PromptSpec>): PromptSpec {
   return {
@@ -45,6 +55,7 @@ export function PromptBuilderPage() {
   const [spec, setSpec] = useState<PromptSpec>(() => loadDraft());
   const [step, setStep] = useState<StepId>('goal');
   const [presetRefreshToken, setPresetRefreshToken] = useState(0);
+  const [undoPresetState, setUndoPresetState] = useState<UndoPresetState | null>(null);
 
   const presets = useMemo(() => loadAllPresets(), [presetRefreshToken]);
   const lintIssues = useMemo(() => lintPromptSpec(spec), [spec]);
@@ -77,7 +88,22 @@ export function PromptBuilderPage() {
       }
     }
 
-    setSpec(mergePatch(preset.spec, {}));
+    setUndoPresetState({
+      presetName: preset.name,
+      previousSpec: cloneSpec(spec),
+    });
+
+    setSpec(mergePatch(cloneSpec(preset.spec), {}));
+    setStep('goal');
+  };
+
+  const onUndoPreset = () => {
+    if (!undoPresetState) {
+      return;
+    }
+
+    setSpec(mergePatch(cloneSpec(undoPresetState.previousSpec), {}));
+    setUndoPresetState(null);
     setStep('goal');
   };
 
@@ -98,11 +124,26 @@ export function PromptBuilderPage() {
     }
 
     setSpec(createDefaultPromptSpec());
+    setUndoPresetState(null);
     setStep('goal');
   };
 
   return (
     <div className="space-y-4">
+      {undoPresetState && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded border border-blue-300 bg-blue-50 p-3 text-sm">
+          <span>Applied preset: {undoPresetState.presetName}</span>
+          <div className="flex gap-2">
+            <Button type="button" size="sm" variant="outline" onClick={onUndoPreset}>
+              Undo
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setUndoPresetState(null)}>
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
+
       <PresetPicker
         presets={presets}
         onApplyPreset={onApplyPreset}
@@ -116,6 +157,7 @@ export function PromptBuilderPage() {
           step={step}
           spec={spec}
           completion={completion}
+          lintIssues={lintIssues}
           onStepChange={setStep}
           onSpecChange={onSpecChange}
           onReset={onReset}

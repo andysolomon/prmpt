@@ -1,10 +1,10 @@
 # Prompt Builder Refactor Progress
-Last updated: 2026-02-08 11:45
+Last updated: 2026-02-08 12:10
 
 ## Overall
 - Status: done
-- Current phase: Completed implementation and validation
-- Next action: Optional UX polish and CI hardening.
+- Current phase: UX polish + Playwright e2e completed
+- Next action: Commit this phase and optionally add CI workflow for e2e.
 
 ## Milestones
 - [x] M1: PromptSpec + Zod schema + defaults
@@ -23,6 +23,9 @@ Last updated: 2026-02-08 11:45
 - [x] Replace monolithic builder with wizard architecture.
 - [x] Add Jest setup + tests.
 - [x] Update README and planning docs.
+- [x] Add step completion visuals and inline step-level lint guidance.
+- [x] Add preset apply undo UX.
+- [x] Install Playwright via bun and add e2e suite.
 
 ## Blockers
 - None
@@ -31,3 +34,4 @@ Last updated: 2026-02-08 11:45
 - Defaults use PromptSpec schema version 1.
 - Unknown/corrupt localStorage data falls back to default PromptSpec.
 - Jest runs with `--watchman=false` in restricted environments.
+- Playwright e2e runs with `bun run test:e2e`.

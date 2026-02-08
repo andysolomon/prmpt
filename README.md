@@ -25,6 +25,11 @@ A local-first React + TypeScript app for building high-quality engineering promp
 - Zod
 - Jest + ts-jest
 
+## Versioning
+
+This project follows semantic versioning (`MAJOR.MINOR.PATCH`).
+The Sprint 1-5 milestone is released as `v1.0.0`.
+
 ## Run Locally
 
 1. Install dependencies

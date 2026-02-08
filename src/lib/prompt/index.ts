@@ -2,6 +2,7 @@ export * from './schema';
 export * from './defaults';
 export * from './lint';
 export * from './presets';
+export * from './examples';
 export * from './storage';
 export * from './formatters/chatText';
 export * from './formatters/apiMessages';

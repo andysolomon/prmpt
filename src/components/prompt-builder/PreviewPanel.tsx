@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,8 +21,18 @@ function copyText(value: string): void {
   }
 }
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tag = target.tagName.toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+}
+
 export function PreviewPanel({ spec }: PreviewPanelProps) {
   const [tab, setTab] = useState<PreviewTab>('chat');
+  const [copied, setCopied] = useState(false);
 
   const chat = useMemo(() => formatChatText(spec), [spec]);
   const api = useMemo(() => formatApiMessages(spec), [spec]);
@@ -30,6 +40,32 @@ export function PreviewPanel({ spec }: PreviewPanelProps) {
 
   const activeContent =
     tab === 'chat' ? chat : tab === 'api' ? JSON.stringify(api, null, 2) : json;
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target)) {
+        return;
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'c') {
+        event.preventDefault();
+        copyText(activeContent);
+        setCopied(true);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeContent]);
+
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setCopied(false), 1500);
+    return () => window.clearTimeout(timeout);
+  }, [copied]);
 
   return (
     <Card>
@@ -55,9 +91,20 @@ export function PreviewPanel({ spec }: PreviewPanelProps) {
           </pre>
         </div>
 
-        <Button type="button" variant="outline" onClick={() => copyText(activeContent)}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            copyText(activeContent);
+            setCopied(true);
+          }}
+        >
           Copy {tab.toUpperCase()}
         </Button>
+        <p className="text-xs text-muted-foreground">
+          Shortcut: <code>Ctrl/Cmd + Shift + C</code> copies the active export.
+          {copied ? ' Copied.' : ''}
+        </p>
       </CardContent>
     </Card>
   );

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
+  PROMPT_EXAMPLES,
   PromptSpec,
   createDefaultPromptSpec,
   deleteCustomPreset,
@@ -13,11 +14,12 @@ import {
   upsertCustomPreset,
 } from '@/lib/prompt';
 
+import { ExampleGallery } from './ExampleGallery';
 import { LintPanel } from './LintPanel';
 import { PresetPicker } from './PresetPicker';
 import { PreviewPanel } from './PreviewPanel';
 import { PromptWizard } from './PromptWizard';
-import { StepId } from './types';
+import { StepId, WIZARD_STEPS } from './types';
 
 interface UndoPresetState {
   presetName: string;
@@ -60,6 +62,42 @@ export function PromptBuilderPage() {
   const presets = useMemo(() => loadAllPresets(), [presetRefreshToken]);
   const lintIssues = useMemo(() => lintPromptSpec(spec), [spec]);
   const completion = useMemo(() => getCompletion(spec), [spec]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable);
+
+      if (isTyping || !event.altKey) {
+        return;
+      }
+
+      const currentIndex = WIZARD_STEPS.findIndex((item) => item.id === step);
+      if (currentIndex < 0) {
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        const nextIndex = Math.min(WIZARD_STEPS.length - 1, currentIndex + 1);
+        setStep(WIZARD_STEPS[nextIndex].id);
+      }
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        const prevIndex = Math.max(0, currentIndex - 1);
+        setStep(WIZARD_STEPS[prevIndex].id);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [step]);
 
   useEffect(() => {
     saveDraft(spec);
@@ -113,6 +151,11 @@ export function PromptBuilderPage() {
   };
 
   const onDeleteCustom = (id: string) => {
+    const confirmed = window.confirm('Delete this custom preset?');
+    if (!confirmed) {
+      return;
+    }
+
     deleteCustomPreset(id);
     setPresetRefreshToken((value) => value + 1);
   };
@@ -124,6 +167,30 @@ export function PromptBuilderPage() {
     }
 
     setSpec(createDefaultPromptSpec());
+    setUndoPresetState(null);
+    setStep('goal');
+  };
+
+  const onLoadExample = (exampleId: string) => {
+    const example = PROMPT_EXAMPLES.find((item) => item.id === exampleId);
+    if (!example) {
+      return;
+    }
+
+    const hasUserData =
+      spec.goal.trim().length > 0 ||
+      spec.inputs.length > 0 ||
+      spec.contextNotes.length > 0 ||
+      spec.constraints.length > 0;
+
+    if (hasUserData) {
+      const confirmed = window.confirm('Loading an example will replace your current draft. Continue?');
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    setSpec(mergePatch(cloneSpec(example.spec), {}));
     setUndoPresetState(null);
     setStep('goal');
   };
@@ -151,6 +218,10 @@ export function PromptBuilderPage() {
         onDeleteCustomPreset={onDeleteCustom}
         spec={spec}
       />
+      <ExampleGallery examples={PROMPT_EXAMPLES} onLoadExample={onLoadExample} />
+      <p className="text-xs text-muted-foreground">
+        Shortcut: <code>Alt + ← / Alt + →</code> navigates wizard steps.
+      </p>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_400px]">
         <PromptWizard

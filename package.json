@@ -1,6 +1,6 @@
 {
   "name": "prompt-builder",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A toolkit for building, managing, and deploying dynamic prompts within the OpenClaw ecosystem",
   "main": "dist/index.js",
   "scripts": {

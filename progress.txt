@@ -1,10 +1,10 @@
 # Prompt Builder Refactor Progress
-Last updated: 2026-02-08 12:10
+Last updated: 2026-02-08 12:18
 
 ## Overall
 - Status: done
-- Current phase: UX polish + Playwright e2e completed
-- Next action: Commit this phase and optionally add CI workflow for e2e.
+- Current phase: Sprint 5 completion + semantic versioning
+- Next action: Optional Sprint 6 backlog selection.
 
 ## Milestones
 - [x] M1: PromptSpec + Zod schema + defaults
@@ -26,6 +26,10 @@ Last updated: 2026-02-08 12:10
 - [x] Add step completion visuals and inline step-level lint guidance.
 - [x] Add preset apply undo UX.
 - [x] Install Playwright via bun and add e2e suite.
+- [x] Add example gallery with loadable PromptSpec examples.
+- [x] Add keyboard shortcuts for step navigation and copy export.
+- [x] Add error boundary fallback UI.
+- [x] Apply semantic versioning for Sprint 1-5 release (`v1.0.0`).
 
 ## Blockers
 - None

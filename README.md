@@ -1,82 +1,106 @@
-# Prompt Builder for OpenClaw Skills
+# Prompt Builder
 
-A toolkit for building, managing, and deploying dynamic prompts within the OpenClaw ecosystem, with special focus on enhancing agent skills and capabilities.
-
-## Overview
-
-This repository contains tools and templates for creating effective prompts that work seamlessly with OpenClaw's skill system. The prompt builder is designed to help create dynamic, context-aware prompts that can enhance agent capabilities, particularly for technical domains like Salesforce development.
-
-## Tech Stack
-
-- **React** - Frontend framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **ShadCN UI** - Component library patterns
-- **Bun** - Runtime
-- **Vite** - Build tool
-- **Convex** - Backend/database platform
-- **Jest** - Testing framework
+A local-first React + TypeScript app for building high-quality engineering prompts with a structured wizard, live exports, and prompt linting.
 
 ## Features
 
-### Prompt Builder UI
-- Interactive chat-based interface for creating prompts
-- Support for different prompt components (instructions, context, examples, constraints, output formats)
-- Template selection system
-- Real-time preview of generated markdown
-- Export functionality (copy to clipboard, download as markdown)
+- Zod-backed `PromptSpec` schema and runtime validation
+- Step-based wizard (Goal, Context, Inputs, Task Type, Output Contract, Constraints, Review)
+- Live preview tabs for:
+  - Chat prompt
+  - API messages (`system` + `user`)
+  - JSON
+- Prompt lint panel with structured issues (`error`, `warning`, `info`)
+- Built-in presets:
+  - Salesforce Feature (Apex + LWC + Tests)
+  - Next.js + shadcn UI Feature
+- Local persistence for drafts and custom presets via `localStorage`
 
-### Component Architecture
-- Reusable UI components following ShadCN patterns
-- State management for prompt building process
-- Responsive design for various screen sizes
+## Tech Stack
 
-## Getting Started
+- React 18
+- TypeScript (strict)
+- Vite
+- Tailwind + shadcn-style components
+- Zod
+- Jest + ts-jest
 
-1. Install dependencies:
-   ```bash
-   bun install
-   ```
+## Run Locally
 
-2. Start the development server:
-   ```bash
-   bun run dev
-   ```
+1. Install dependencies
 
-3. Open [http://localhost:5173](http://localhost:5173) in your browser
+```bash
+bun install
+```
 
-## Development
+2. Start dev server
 
-This project uses Vite for fast development. The development server runs on port 5173 by default.
+```bash
+bun run dev
+```
+
+3. Open `http://localhost:5173`
+
+## Quality Checks
+
+Type check:
+
+```bash
+npm run type-check
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+Tests (watchman disabled in restricted environments):
+
+```bash
+npm test -- --runInBand --watchman=false
+```
 
 ## Architecture
 
-### Component Structure
-- `src/components/prompt-builder.tsx` - Main prompt building interface
-- `src/components/layout.tsx` - Application layout
-- `src/components/ui/` - Reusable UI components
-- `src/lib/utils.ts` - Utility functions
-- `src/styles/globals.css` - Global styles
+### Prompt domain (model-first)
 
-### Key UI Components
-- Button, Card, Input, Textarea - Basic form elements
-- Dropdown Menu - For selecting prompt components
-- Skeleton - Loading states
+- `src/lib/prompt/schema.ts`
+  - Zod schemas and inferred TS types (`PromptSpec`, input/output/task enums)
+- `src/lib/prompt/defaults.ts`
+  - default model factory and metadata updates
+- `src/lib/prompt/formatters/`
+  - `chatText.ts`, `apiMessages.ts`, `json.ts`
+- `src/lib/prompt/lint.ts`
+  - lint rules and structured `LintIssue[]`
+- `src/lib/prompt/presets.ts`
+  - built-in preset catalog
+- `src/lib/prompt/storage.ts`
+  - validated load/save for draft + custom presets
 
-## Use Cases
+### UI
 
-### For Salesforce Development
-- Dynamic SOQL query builders
-- Apex code generation assistants
-- Metadata management prompts
-- Integration pattern templates
+- `src/components/prompt-builder/PromptBuilderPage.tsx`
+  - top-level orchestration (state, autosave, lint, presets)
+- `src/components/prompt-builder/PromptWizard.tsx`
+  - step navigation and editor shell
+- `src/components/prompt-builder/steps/*`
+  - individual wizard steps
+- `src/components/prompt-builder/PreviewPanel.tsx`
+  - export previews + copy actions
+- `src/components/prompt-builder/LintPanel.tsx`
+  - grouped lint feedback
 
-### For General Development
-- Code review templates
-- Architecture decision frameworks
-- Debugging assistance prompts
-- Documentation generators
+## Extending the app
 
-## Contributing
+### Add a built-in preset
 
-This repository is designed to evolve with the OpenClaw ecosystem. Contributions that enhance the integration between prompts and skills are welcome.
+Edit `src/lib/prompt/presets.ts` and append a new `PromptPreset` entry to `BUILT_IN_PRESETS`.
+
+### Add/adjust lint rules
+
+Edit `src/lib/prompt/lint.ts` in `lintPromptSpec()` and add a new `LintIssue` condition.
+
+### Add output format logic
+
+Add a formatter in `src/lib/prompt/formatters/` and wire it into `PreviewPanel.tsx`.

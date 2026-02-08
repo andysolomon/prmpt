@@ -1,0 +1,33 @@
+# Prompt Builder Refactor Progress
+Last updated: 2026-02-08 11:45
+
+## Overall
+- Status: done
+- Current phase: Completed implementation and validation
+- Next action: Optional UX polish and CI hardening.
+
+## Milestones
+- [x] M1: PromptSpec + Zod schema + defaults
+- [x] M2: Formatters (chat/api/json)
+- [x] M3: Linter + rules
+- [x] M4: Presets + localStorage
+- [x] M5: Wizard UI + preview + lint panel
+- [x] M6: Tests (domain + UI smoke)
+- [x] M7: Docs alignment (README + plans)
+
+## Detailed Tasks
+- [x] Create `src/lib/prompt` modules with Zod schemas and exports.
+- [x] Implement formatter functions.
+- [x] Implement lint engine and lint issue structure.
+- [x] Implement built-in presets and localStorage helpers.
+- [x] Replace monolithic builder with wizard architecture.
+- [x] Add Jest setup + tests.
+- [x] Update README and planning docs.
+
+## Blockers
+- None
+
+## Notes
+- Defaults use PromptSpec schema version 1.
+- Unknown/corrupt localStorage data falls back to default PromptSpec.
+- Jest runs with `--watchman=false` in restricted environments.

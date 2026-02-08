@@ -23,7 +23,8 @@ Build a personal-use Prompt Builder for software development that guides users t
 
 ### Suggested Folder Structure
 - `src/lib/prompt/`
-  - `types.ts` (PromptSpec + supporting types)
+  - `schema.ts` (Zod schema + inferred PromptSpec/supporting types)
+  - `defaults.ts` (default PromptSpec factory)
   - `formatters/`
     - `chatText.ts`
     - `apiMessages.ts`
@@ -72,6 +73,7 @@ Build a personal-use Prompt Builder for software development that guides users t
 **Acceptance Criteria**
 - PromptSpec is serializable to JSON.
 - PromptSpec supports all steps without needing UI-specific fields.
+- PromptSpec is runtime-validated with Zod at storage/import boundaries.
 
 ---
 
@@ -104,6 +106,7 @@ Build a personal-use Prompt Builder for software development that guides users t
 **Deliverables**
 - `LintIssue` structure: `id`, `severity`, `message`, `fieldPath`, `suggestions[]`.
 - Lint panel UI with grouped issues.
+- Unit tests cover all lint rules.
 
 **Acceptance Criteria**
 - Lint issues update live as PromptSpec changes.
@@ -161,6 +164,8 @@ Build a personal-use Prompt Builder for software development that guides users t
 **Acceptance Criteria**
 - Refresh keeps your current work
 - Presets persist across sessions
+- Invalid/corrupt stored data falls back to default PromptSpec.
+- Version mismatches (`metadata.version`) fail safely to defaults (v1 only in MVP).
 
 ---
 
@@ -202,3 +207,4 @@ Reusable fragments:
 - Presets exist for Salesforce and Next.js/shadcn.
 - Draft and presets persist locally.
 - Codebase cleanly separates model/format/lint from UI.
+- Core model/formatter/lint/storage modules have automated tests.

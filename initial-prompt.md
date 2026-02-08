@@ -1,6 +1,6 @@
 You are a senior full-stack engineer. Help me improve my prompt builder app repo and implement a real “wizard + prompt spec + formatter + lint” architecture.
 
-Repo: https://github.com/andysolomon/prmpt
+Repo: https://github.com/andysolomon/prompt-builder
 
 High-level goal:
 Build a personal-use Prompt Builder for software development (React/shadcn). It should guide the user through structured prompt components and generate a high-quality final prompt (and other export formats). It should be designed for full-stack work, with templates/presets I’ll reuse (Salesforce + general full-stack).
@@ -57,4 +57,3 @@ When you need to make assumptions:
 Start by:
 - Inspecting the existing repo and identifying the current entry points and component structure.
 - Proposing a folder structure and implementing PromptSpec + formatter + linter first, then UI steps.
-

@@ -41,8 +41,9 @@
 **US-1.1: Create PromptSpec data model**
 - As a user, I want prompts represented as structured components so prompts are consistent and reusable.
 - **Acceptance Criteria**
-  - `PromptSpec` type supports: title, goal, persona (optional), stack tags, context notes, inputs, task type, constraints, output contract, examples (optional), metadata
+  - `PromptSpec` type supports: title, goal, persona (optional), stack tags, context notes, inputs, task type, constraints, output contract, examples (optional), assumptions policy, metadata
   - A `createDefaultPromptSpec()` function returns a valid spec
+  - Zod schema validates PromptSpec at runtime and is used at persistence/import boundaries
 
 **US-1.2: Implement export formatter — Chat prompt**
 - As a user, I want a clean single-text prompt I can paste into Codex/ChatGPT.
@@ -62,6 +63,12 @@
   - JSON export is valid, includes version metadata
   - Import validates shape (basic runtime checks) and falls back safely
 
+**US-1.5: Core module tests**
+- As a developer, I want automated tests for core prompt modules so refactors are safe.
+- **Acceptance Criteria**
+  - Unit tests cover PromptSpec schema/defaults, formatters, and JSON parse/fallback behavior
+  - `npm test` passes in CI/local with watchman disabled when needed
+
 ---
 
 ## Sprint 2 — Linting & Prompt Quality Rails
@@ -80,6 +87,7 @@
     - Vague goal/task (warning)
     - Missing stack/context (warning)
     - Overlarge inputs (warning + suggestion)
+    - Conflicting constraints (warning)
 
 **US-2.2: Lint panel UI**
 - As a user, I want to see lint issues in a clear panel so I can fix them quickly.
@@ -92,6 +100,11 @@
 - As a user, I want a quick summary of quality so I can tell if the prompt is “ready”.
 - **Acceptance Criteria**
   - Simple summary: `Ready / Needs work` + counts by severity
+
+**US-2.4: Lint rule tests**
+- As a developer, I want tests for lint behavior so quality rules stay stable.
+- **Acceptance Criteria**
+  - Unit tests verify required-field errors, vague language warnings, oversized input warnings, and conflicting-constraint warnings
 
 ---
 
@@ -181,6 +194,8 @@
 - **Acceptance Criteria**
   - Auto-save to localStorage
   - Manual “Save draft” and “Reset” options
+  - Corrupt/invalid stored drafts fall back to default PromptSpec
+  - Unknown schema version falls back safely (v1 only supported in MVP)
 
 **US-4.4: Create custom presets**
 - As a user, I want to save a PromptSpec as a reusable preset.
@@ -226,12 +241,24 @@
 ### User Stories
 **US-6.1: Import/export as file**
 - As a user, I want to download/upload PromptSpec JSON files for portability.
-- **US-6.2: “Prompt snippets” library**
+- **Acceptance Criteria**
+  - Download current PromptSpec as `.json`
+  - Upload validates schema before replacing draft
+
+**US-6.2: “Prompt snippets” library**
 - As a user, I want reusable blocks (e.g., “Output as patch diff”) I can insert into any prompt.
-- **US-6.3: Input summarizer helper**
+- **Acceptance Criteria**
+  - Users can insert predefined snippet blocks into constraints/output requirements
+
+**US-6.3: Input summarizer helper**
 - As a user, I want help trimming large logs/code into a summarized input block (manual or assisted).
-- **US-6.4: URL share**
+- **Acceptance Criteria**
+  - Suggests summary template when input size crosses threshold
+
+**US-6.4: URL share**
 - As a user, I want to share a prompt spec via URL encoding for quick collaboration.
+- **Acceptance Criteria**
+  - Generates/loads shareable URL with encoded PromptSpec payload
 
 ---
 
@@ -250,3 +277,4 @@
 - Presets exist for Salesforce and Next.js/shadcn
 - Draft and presets persist locally
 - Clean separation of model/formatter/lint from UI
+- Core prompt modules are covered by automated tests

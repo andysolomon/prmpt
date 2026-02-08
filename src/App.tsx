@@ -1,18 +1,17 @@
-import React from 'react';
 import Layout from './components/layout';
-import PromptBuilder from './components/prompt-builder';
+import { PromptBuilderPage } from './components/prompt-builder';
 
 function App() {
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Chat-Based Prompt Builder</h1>
-          <p className="text-muted-foreground mt-2">
-            Create structured prompts through guided conversation
+      <div className="mx-auto max-w-[1400px]">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Prompt Builder</h1>
+          <p className="mt-2 text-muted-foreground">
+            Build structured prompts with a wizard, live exports, and lint feedback.
           </p>
         </div>
-        <PromptBuilder />
+        <PromptBuilderPage />
       </div>
     </Layout>
   );

@@ -6,28 +6,62 @@ A toolkit for building, managing, and deploying dynamic prompts within the OpenC
 
 This repository contains tools and templates for creating effective prompts that work seamlessly with OpenClaw's skill system. The prompt builder is designed to help create dynamic, context-aware prompts that can enhance agent capabilities, particularly for technical domains like Salesforce development.
 
-## Key Components
+## Tech Stack
 
-### 1. Skill-Integrated Prompts
-- Templates that leverage OpenClaw's available tools (exec, web_search, browser, etc.)
-- Dynamic prompt structures that adapt based on available skills
-- Context-aware prompt builders that incorporate memory and session history
+- **React** - Frontend framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **ShadCN UI** - Component library patterns
+- **Bun** - Runtime
+- **Vite** - Build tool
+- **Convex** - Backend/database platform
+- **Jest** - Testing framework
 
-### 2. Agent Enhancement Tools
-- Prompt templates for improving agent reasoning
-- Templates for specific domains (e.g., Salesforce development, full-stack engineering)
-- Modular prompt components that can be combined dynamically
+## Features
 
-### 3. Template Library
-- Pre-built templates for common use cases
-- Salesforce-specific prompt structures
-- Development workflow templates
-- Testing and validation frameworks for prompts
+### Prompt Builder UI
+- Interactive chat-based interface for creating prompts
+- Support for different prompt components (instructions, context, examples, constraints, output formats)
+- Template selection system
+- Real-time preview of generated markdown
+- Export functionality (copy to clipboard, download as markdown)
 
-### 4. Skill Manifest Integration
-- Proper skill.json templates for prompt-related skills
-- Discovery mechanisms for prompt libraries
-- Versioning system for prompt evolution
+### Component Architecture
+- Reusable UI components following ShadCN patterns
+- State management for prompt building process
+- Responsive design for various screen sizes
+
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+2. Start the development server:
+   ```bash
+   bun run dev
+   ```
+
+3. Open [http://localhost:5173](http://localhost:5173) in your browser
+
+## Development
+
+This project uses Vite for fast development. The development server runs on port 5173 by default.
+
+## Architecture
+
+### Component Structure
+- `src/components/prompt-builder.tsx` - Main prompt building interface
+- `src/components/layout.tsx` - Application layout
+- `src/components/ui/` - Reusable UI components
+- `src/lib/utils.ts` - Utility functions
+- `src/styles/globals.css` - Global styles
+
+### Key UI Components
+- Button, Card, Input, Textarea - Basic form elements
+- Dropdown Menu - For selecting prompt components
+- Skeleton - Loading states
 
 ## Use Cases
 
@@ -42,24 +76,6 @@ This repository contains tools and templates for creating effective prompts that
 - Architecture decision frameworks
 - Debugging assistance prompts
 - Documentation generators
-
-## Structure
-
-```
-prompt-builder/
-├── templates/           # Prompt templates
-├── skills/             # OpenClaw skill definitions
-├── utils/              # Utility functions for prompt management
-├── examples/           # Example implementations
-└── README.md
-```
-
-## Getting Started
-
-1. Clone this repository
-2. Review the example templates
-3. Customize prompts for your specific use cases
-4. Integrate with your OpenClaw agent configuration
 
 ## Contributing
 

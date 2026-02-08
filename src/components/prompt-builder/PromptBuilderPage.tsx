@@ -4,11 +4,15 @@ import { Button } from '@/components/ui/button';
 import {
   PROMPT_EXAMPLES,
   PromptSpec,
+  createShareUrl,
   createDefaultPromptSpec,
   deleteCustomPreset,
+  formatPromptSpecJson,
   lintPromptSpec,
   loadAllPresets,
   loadDraft,
+  parsePromptSpecFromUrl,
+  parsePromptSpecJson,
   saveDraft,
   toCustomPreset,
   upsertCustomPreset,
@@ -16,6 +20,7 @@ import {
 
 import { ExampleGallery } from './ExampleGallery';
 import { LintPanel } from './LintPanel';
+import { PortabilityPanel } from './PortabilityPanel';
 import { PresetPicker } from './PresetPicker';
 import { PreviewPanel } from './PreviewPanel';
 import { PromptWizard } from './PromptWizard';
@@ -28,6 +33,15 @@ interface UndoPresetState {
 
 function cloneSpec(spec: PromptSpec): PromptSpec {
   return JSON.parse(JSON.stringify(spec)) as PromptSpec;
+}
+
+function hasUserData(spec: PromptSpec): boolean {
+  return (
+    spec.goal.trim().length > 0 ||
+    spec.inputs.length > 0 ||
+    spec.contextNotes.length > 0 ||
+    spec.constraints.length > 0
+  );
 }
 
 function mergePatch(spec: PromptSpec, patch: Partial<PromptSpec>): PromptSpec {
@@ -103,6 +117,21 @@ export function PromptBuilderPage() {
     saveDraft(spec);
   }, [spec]);
 
+  useEffect(() => {
+    const parsed = parsePromptSpecFromUrl();
+    if (!parsed.ok) {
+      return;
+    }
+
+    const shouldApply = !hasUserData(spec) || window.confirm('Load PromptSpec from shared URL payload?');
+    if (!shouldApply) {
+      return;
+    }
+
+    setSpec(mergePatch(cloneSpec(parsed.spec), {}));
+    setStep('goal');
+  }, []);
+
   const onSpecChange = (patch: Partial<PromptSpec>) => {
     setSpec((prev) => mergePatch(prev, patch));
   };
@@ -113,13 +142,7 @@ export function PromptBuilderPage() {
       return;
     }
 
-    const hasUserData =
-      spec.goal.trim().length > 0 ||
-      spec.inputs.length > 0 ||
-      spec.contextNotes.length > 0 ||
-      spec.constraints.length > 0;
-
-    if (hasUserData) {
+    if (hasUserData(spec)) {
       const confirmed = window.confirm('Applying a preset will replace your current draft. Continue?');
       if (!confirmed) {
         return;
@@ -177,13 +200,7 @@ export function PromptBuilderPage() {
       return;
     }
 
-    const hasUserData =
-      spec.goal.trim().length > 0 ||
-      spec.inputs.length > 0 ||
-      spec.contextNotes.length > 0 ||
-      spec.constraints.length > 0;
-
-    if (hasUserData) {
+    if (hasUserData(spec)) {
       const confirmed = window.confirm('Loading an example will replace your current draft. Continue?');
       if (!confirmed) {
         return;
@@ -193,6 +210,69 @@ export function PromptBuilderPage() {
     setSpec(mergePatch(cloneSpec(example.spec), {}));
     setUndoPresetState(null);
     setStep('goal');
+  };
+
+  const onExportJson = () => {
+    const json = formatPromptSpecJson(spec);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(spec.title || 'prompt-spec').toLowerCase().replace(/\s+/g, '-')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const onImportJsonFile = async (file: File) => {
+    const text = await file.text();
+    const parsed = parsePromptSpecJson(text);
+
+    if (!parsed.ok) {
+      window.alert(`Unable to import PromptSpec JSON: ${parsed.error}`);
+      return;
+    }
+
+    if (hasUserData(spec)) {
+      const confirmed = window.confirm('Importing JSON will replace your current draft. Continue?');
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    setSpec(mergePatch(cloneSpec(parsed.value), {}));
+    setStep('goal');
+    setUndoPresetState(null);
+  };
+
+  const onCopyShareUrl = async () => {
+    const shareUrl = createShareUrl(spec);
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(shareUrl);
+      return;
+    }
+
+    window.prompt('Copy this share URL', shareUrl);
+  };
+
+  const onLoadFromUrl = () => {
+    const parsed = parsePromptSpecFromUrl();
+    if (!parsed.ok) {
+      window.alert(parsed.error);
+      return;
+    }
+
+    if (hasUserData(spec)) {
+      const confirmed = window.confirm('Loading from URL will replace your current draft. Continue?');
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    setSpec(mergePatch(cloneSpec(parsed.spec), {}));
+    setStep('goal');
+    setUndoPresetState(null);
   };
 
   return (
@@ -217,6 +297,12 @@ export function PromptBuilderPage() {
         onSaveCustomPreset={onSaveCustomPreset}
         onDeleteCustomPreset={onDeleteCustom}
         spec={spec}
+      />
+      <PortabilityPanel
+        onExportJson={onExportJson}
+        onImportJsonFile={onImportJsonFile}
+        onCopyShareUrl={onCopyShareUrl}
+        onLoadFromUrl={onLoadFromUrl}
       />
       <ExampleGallery examples={PROMPT_EXAMPLES} onLoadExample={onLoadExample} />
       <p className="text-xs text-muted-foreground">

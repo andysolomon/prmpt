@@ -8,7 +8,26 @@ interface InputsStepProps {
   onChange: (patch: Partial<PromptSpec>) => void;
 }
 
+const SUMMARY_HINT_THRESHOLD = 2000;
+
+function createSummaryTemplate(content: string): string {
+  const excerpt = content.slice(0, 800).trim();
+
+  return [
+    'Summary:',
+    '- What is happening:',
+    '- Expected behavior:',
+    '- Observed behavior:',
+    '- Most relevant files/log lines:',
+    '',
+    'Raw excerpt:',
+    excerpt,
+  ].join('\n');
+}
+
 export function InputsStep({ spec, onChange }: InputsStepProps) {
+  const totalChars = spec.inputs.reduce((count, input) => count + input.content.length, 0);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -17,6 +36,12 @@ export function InputsStep({ spec, onChange }: InputsStepProps) {
           Add input
         </Button>
       </div>
+
+      {totalChars > SUMMARY_HINT_THRESHOLD && (
+        <p className="rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
+          Large input detected ({totalChars} chars). Consider summarizing logs/code before full raw content.
+        </p>
+      )}
 
       {spec.inputs.length === 0 && (
         <p className="rounded border border-dashed p-4 text-sm text-muted-foreground">
@@ -81,6 +106,24 @@ export function InputsStep({ spec, onChange }: InputsStepProps) {
               }}
             />
             <p className="mt-1 text-xs text-muted-foreground">{input.content.length} characters</p>
+            {input.content.length > SUMMARY_HINT_THRESHOLD && (
+              <Button
+                className="mt-2"
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const next = [...spec.inputs];
+                  next[index] = {
+                    ...next[index],
+                    content: createSummaryTemplate(next[index].content),
+                  };
+                  onChange({ inputs: next });
+                }}
+              >
+                Insert summary template
+              </Button>
+            )}
           </div>
 
           <Button

@@ -28,7 +28,8 @@ A local-first React + TypeScript app for building high-quality engineering promp
 ## Versioning
 
 This project follows semantic versioning (`MAJOR.MINOR.PATCH`).
-The Sprint 1-5 milestone is released as `v1.0.0`.
+- Sprint 1-5 milestone release: `v1.0.0`
+- Sprint 6 feature release: `v1.1.0`
 
 ## Run Locally
 

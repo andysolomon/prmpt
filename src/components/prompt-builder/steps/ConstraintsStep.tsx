@@ -17,6 +17,12 @@ const COMMON_CONSTRAINTS = [
   'List file paths in output',
 ];
 
+const CONSTRAINT_SNIPPETS = [
+  'Do not change public API signatures unless explicitly requested.',
+  'Preserve backward compatibility for existing configs.',
+  'Prefer minimal diff and avoid unrelated refactors.',
+];
+
 export function ConstraintsStep({ spec, onChange }: ConstraintsStepProps) {
   const [constraintInput, setConstraintInput] = useState('');
   const [exampleInput, setExampleInput] = useState('');
@@ -42,6 +48,30 @@ export function ConstraintsStep({ spec, onChange }: ConstraintsStepProps) {
             </Button>
           ))}
         </div>
+
+        <p className="mb-2 text-sm font-medium">Snippet library</p>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {CONSTRAINT_SNIPPETS.map((snippet) => (
+            <Button
+              key={snippet}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!spec.constraints.includes(snippet)) {
+                  onChange({ constraints: [...spec.constraints, snippet] });
+                }
+              }}
+            >
+              Insert snippet
+            </Button>
+          ))}
+        </div>
+        <ul className="mb-2 list-disc pl-4 text-xs text-muted-foreground">
+          {CONSTRAINT_SNIPPETS.map((snippet) => (
+            <li key={`snippet-${snippet}`}>{snippet}</li>
+          ))}
+        </ul>
 
         <div className="flex gap-2">
           <Input

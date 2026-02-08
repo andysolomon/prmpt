@@ -4,6 +4,7 @@ export * from './lint';
 export * from './presets';
 export * from './examples';
 export * from './storage';
+export * from './share';
 export * from './formatters/chatText';
 export * from './formatters/apiMessages';
 export * from './formatters/json';

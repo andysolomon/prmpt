@@ -27,4 +27,10 @@ test.describe('Prompt Builder', () => {
     await page.getByRole('button', { name: 'Undo' }).click();
     await expect(page.getByText('Applied preset: Next.js + shadcn UI Feature')).toHaveCount(0);
   });
+
+  test('shows sprint 6 portability panel', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Import / Export / Share' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Download PromptSpec JSON' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Copy share URL' })).toBeVisible();
+  });
 });

@@ -9,6 +9,13 @@ interface OutputContractStepProps {
   onChange: (patch: Partial<PromptSpec>) => void;
 }
 
+const OUTPUT_SNIPPETS = [
+  'Provide exact file paths for all changed files.',
+  'Include commands to run lint, type-check, and tests.',
+  'Call out edge cases and failure modes.',
+  'Output patch-style diffs where possible.',
+];
+
 export function OutputContractStep({ spec, onChange }: OutputContractStepProps) {
   const [requirementInput, setRequirementInput] = useState('');
 
@@ -39,6 +46,37 @@ export function OutputContractStep({ spec, onChange }: OutputContractStepProps) 
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-medium">Requirement snippets</label>
+        <div className="flex flex-wrap gap-2">
+          {OUTPUT_SNIPPETS.map((snippet) => (
+            <Button
+              key={snippet}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!outputContract.requirements.includes(snippet)) {
+                  onChange({
+                    outputContract: {
+                      ...outputContract,
+                      requirements: [...outputContract.requirements, snippet],
+                    },
+                  });
+                }
+              }}
+            >
+              Insert snippet
+            </Button>
+          ))}
+        </div>
+        <ul className="mt-2 list-disc pl-4 text-xs text-muted-foreground">
+          {OUTPUT_SNIPPETS.map((snippet) => (
+            <li key={`hint-${snippet}`}>{snippet}</li>
+          ))}
+        </ul>
       </div>
 
       <div>

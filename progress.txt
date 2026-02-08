@@ -1,10 +1,10 @@
 # Prompt Builder Refactor Progress
-Last updated: 2026-02-08 12:18
+Last updated: 2026-02-08 12:30
 
 ## Overall
 - Status: done
-- Current phase: Sprint 5 completion + semantic versioning
-- Next action: Optional Sprint 6 backlog selection.
+- Current phase: Sprint 6 implementation
+- Next action: Validate and commit Sprint 6 features.
 
 ## Milestones
 - [x] M1: PromptSpec + Zod schema + defaults
@@ -30,6 +30,11 @@ Last updated: 2026-02-08 12:18
 - [x] Add keyboard shortcuts for step navigation and copy export.
 - [x] Add error boundary fallback UI.
 - [x] Apply semantic versioning for Sprint 1-5 release (`v1.0.0`).
+- [x] Add PromptSpec URL share/load support.
+- [x] Add PromptSpec JSON import/export file flow.
+- [x] Add snippet library insertion for constraints/output requirements.
+- [x] Add input summarizer helper template for large inputs.
+- [x] Bump semantic version for Sprint 6 release (`v1.1.0`).
 
 ## Blockers
 - None

@@ -28,7 +28,7 @@ export function ReviewExportStep({ spec, onReset, onSavePreset }: ReviewExportSt
           Save as custom preset
         </Button>
         <Button type="button" variant="destructive" onClick={onReset}>
-          Reset draft
+          Clear draft
         </Button>
       </div>
     </div>

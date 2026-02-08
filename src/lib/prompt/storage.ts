@@ -110,6 +110,23 @@ export function deleteCustomPreset(id: string): void {
   saveCustomPresets(customPresets);
 }
 
+export function clearCustomPresets(): void {
+  if (!hasStorage()) {
+    return;
+  }
+
+  window.localStorage.removeItem(CUSTOM_PRESETS_STORAGE_KEY);
+}
+
+export function clearAllPromptLocalData(): void {
+  if (!hasStorage()) {
+    return;
+  }
+
+  window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+  window.localStorage.removeItem(CUSTOM_PRESETS_STORAGE_KEY);
+}
+
 export function loadAllPresets(): PromptPreset[] {
   return [...BUILT_IN_PRESETS, ...loadCustomPresets()];
 }

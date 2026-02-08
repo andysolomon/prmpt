@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import {
   PROMPT_EXAMPLES,
   PromptSpec,
+  clearAllPromptLocalData,
+  clearCustomPresets,
+  clearDraft,
   createShareUrl,
   createDefaultPromptSpec,
   deleteCustomPreset,
@@ -184,11 +187,12 @@ export function PromptBuilderPage() {
   };
 
   const onReset = () => {
-    const confirmed = window.confirm('Reset current draft to defaults?');
+    const confirmed = window.confirm('Clear current draft and start a new prompt?');
     if (!confirmed) {
       return;
     }
 
+    clearDraft();
     setSpec(createDefaultPromptSpec());
     setUndoPresetState(null);
     setStep('goal');
@@ -275,6 +279,19 @@ export function PromptBuilderPage() {
     setUndoPresetState(null);
   };
 
+  const onDeleteAllCustomPresets = () => {
+    clearCustomPresets();
+    setPresetRefreshToken((value) => value + 1);
+  };
+
+  const onClearAllLocalData = () => {
+    clearAllPromptLocalData();
+    setSpec(createDefaultPromptSpec());
+    setUndoPresetState(null);
+    setPresetRefreshToken((value) => value + 1);
+    setStep('goal');
+  };
+
   return (
     <div className="space-y-4">
       {undoPresetState && (
@@ -298,11 +315,18 @@ export function PromptBuilderPage() {
         onDeleteCustomPreset={onDeleteCustom}
         spec={spec}
       />
+      <div className="flex items-center justify-end">
+        <Button type="button" variant="outline" onClick={onReset}>
+          New Prompt
+        </Button>
+      </div>
       <PortabilityPanel
         onExportJson={onExportJson}
         onImportJsonFile={onImportJsonFile}
         onCopyShareUrl={onCopyShareUrl}
         onLoadFromUrl={onLoadFromUrl}
+        onDeleteAllCustomPresets={onDeleteAllCustomPresets}
+        onClearAllLocalData={onClearAllLocalData}
       />
       <ExampleGallery examples={PROMPT_EXAMPLES} onLoadExample={onLoadExample} />
       <p className="text-xs text-muted-foreground">

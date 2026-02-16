@@ -13,7 +13,13 @@ import {
 import { useLibraryItems } from './useLibraryItems';
 
 function itemPath(item: LibraryItem): string {
-  return item.type === 'skill' ? `/library/skills/${item.id}` : `/create/prompt?itemId=${item.id}`;
+  if (item.type === 'skill') {
+    return `/library/skills/${item.id}`;
+  }
+  if (item.type === 'anatomy') {
+    return `/anatomy?itemId=${item.id}`;
+  }
+  return `/library/prompts/${item.id}`;
 }
 
 export function LibraryDashboardPage() {
@@ -50,7 +56,10 @@ export function LibraryDashboardPage() {
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link to="/create/prompt">New Prompt</Link>
+            <Link to="/library/prompts">Prompt Library</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/library/anatomies">Anatomy Library</Link>
           </Button>
           <Button onClick={createSkill}>New Skill</Button>
         </div>

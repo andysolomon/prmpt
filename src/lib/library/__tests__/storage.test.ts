@@ -1,4 +1,5 @@
 import {
+  createAnatomyLibraryItem,
   createPromptLibraryItemFromPromptSpec,
   createSkillLibraryItem,
   deleteItem,
@@ -6,6 +7,8 @@ import {
   getItem,
   listItems,
   migrateLegacyPromptStorageIfNeeded,
+  seedDefaultExampleSkillsIfMissing,
+  toggleArchived,
   toggleFavorite,
   touchLastUsed,
   upsertItem,
@@ -55,9 +58,31 @@ describe('library storage', () => {
     const prompt = createPromptLibraryItemFromPromptSpec('Prompt One', createDefaultPromptSpec());
     upsertItem(prompt);
 
-    expect(listItems().length).toBe(2);
+    const anatomy = createAnatomyLibraryItem({
+      title: 'SalesforceForge Anatomy',
+      description: 'Anatomy test item',
+      payload: {
+        forgeState: {
+          agentName: 'SalesforceForge',
+          tagline: 'test',
+          identityIntro: 'test',
+          coreBehavior: 'test',
+          rules: 'test',
+          outputFormat: 'test',
+          githubRepoUrls: '',
+          githubFocusFiles: '',
+          githubAlignmentRules: '',
+          archetypes: [],
+        },
+        promptText: 'You are SalesforceForge.',
+      },
+    });
+    upsertItem(anatomy);
+
+    expect(listItems().length).toBe(3);
     expect(listItems({ type: 'skill' }).length).toBe(1);
     expect(listItems({ type: 'prompt' }).length).toBe(1);
+    expect(listItems({ type: 'anatomy' }).length).toBe(1);
   });
 
   it('touches lastUsed and toggles favorite', () => {
@@ -71,6 +96,14 @@ describe('library storage', () => {
     const after = getItem(skill.id);
     expect(after?.favorite).toBe(true);
     expect(after?.lastUsedAt).toBeGreaterThanOrEqual(before?.lastUsedAt ?? 0);
+  });
+
+  it('toggles archive state', () => {
+    const prompt = createPromptLibraryItemFromPromptSpec('Prompt One', createDefaultPromptSpec());
+    upsertItem(prompt);
+
+    toggleArchived(prompt.id);
+    expect(getItem(prompt.id)?.archived).toBe(true);
   });
 
   it('duplicates and deletes items', () => {
@@ -105,5 +138,18 @@ describe('library storage', () => {
     migrateLegacyPromptStorageIfNeeded();
     const secondRunItems = listItems({ type: 'prompt' });
     expect(secondRunItems.length).toBe(1);
+  });
+
+  it('seeds default example skills without duplicates', () => {
+    seedDefaultExampleSkillsIfMissing();
+    seedDefaultExampleSkillsIfMissing();
+
+    const skills = listItems({ type: 'skill' });
+    const titles = skills.map((item) => item.title);
+
+    expect(titles).toContain('YouTube Video Analyzer');
+    expect(titles).toContain('Hello World Skill: A Minimal Example');
+    expect(titles.filter((title) => title === 'YouTube Video Analyzer')).toHaveLength(1);
+    expect(titles.filter((title) => title === 'Hello World Skill: A Minimal Example')).toHaveLength(1);
   });
 });

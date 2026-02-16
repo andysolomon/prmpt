@@ -17,6 +17,15 @@ export interface SeedSkillItem {
   favorite?: boolean;
 }
 
+export interface SeedAnatomyItem {
+  id: string;
+  title: string;
+  description?: string;
+  tags?: string[];
+  status?: 'draft' | 'stable' | 'deprecated';
+  favorite?: boolean;
+}
+
 function makePromptSpec(title: string, goal: string) {
   const iso = new Date().toISOString();
   return {
@@ -91,6 +100,39 @@ export function buildSkillItem(seed: SeedSkillItem, timestamp = Date.now()) {
   };
 }
 
+export function buildAnatomyItem(seed: SeedAnatomyItem, timestamp = Date.now()) {
+  return {
+    id: seed.id,
+    type: 'anatomy' as const,
+    title: seed.title,
+    description: seed.description ?? `${seed.title} anatomy`,
+    tags: seed.tags ?? ['anatomy', 'prompt-forge'],
+    targets: ['claude', 'chatgpt'],
+    status: seed.status ?? 'draft',
+    favorite: seed.favorite ?? false,
+    archived: false,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    lastUsedAt: timestamp,
+    payload: {
+      forgeState: {
+        agentName: 'SeedAgent',
+        tagline: 'seed anatomy',
+        identityIntro: 'seed identity',
+        coreBehavior: 'seed behavior',
+        rules: 'seed rules',
+        outputFormat: 'seed format',
+        githubRepoUrls: '',
+        githubFocusFiles: '',
+        githubAlignmentRules: '',
+        archetypes: [{ name: 'Sherlock Holmes', trait: 'seed trait' }],
+      },
+      promptText: 'You are SeedAgent.',
+      selectedPresetId: 'salesforce-forge',
+    },
+  };
+}
+
 export function buildSeedLibraryData() {
   const base = Date.now();
 
@@ -141,5 +183,17 @@ export function buildSeedLibraryData() {
     ),
   ];
 
-  return { prompts, skills };
+  const anatomies = [
+    buildAnatomyItem(
+      {
+        id: 'anatomy-seed-a',
+        title: 'SalesforceForge Anatomy',
+        description: 'Seed anatomy library item.',
+        favorite: true,
+      },
+      base - 6000
+    ),
+  ];
+
+  return { prompts, skills, anatomies };
 }

@@ -31,12 +31,12 @@ test.describe('Prompt Forge (Anatomy Route)', () => {
     await expect(page.getByText('Role Areas (Color-Coded)')).toHaveCount(0);
   });
 
-  test('exports to prompt builder preset and saves agent to library', async ({ page }) => {
+  test('exports to prompt builder preset and saves anatomy to library', async ({ page }) => {
     await page.getByRole('button', { name: 'Export to Prompt Builder Preset' }).click();
     await expect(page.getByText(/Saved ".*\(Forge\)" to Prompt Builder custom presets\./)).toBeVisible();
 
-    await page.getByRole('button', { name: 'Save Agent to Library' }).click();
-    await expect(page.getByText(/Saved ".* Forge" to Library Prompts\./)).toBeVisible();
+    await page.getByRole('button', { name: 'Save Anatomy to Library' }).click();
+    await expect(page.getByText(/Loaded anatomy ".* Forge" from Library Anatomies\./)).toBeVisible();
 
     await page.getByRole('button', { name: 'Continue in Prompt Builder' }).last().click({ force: true });
     await expect(page).toHaveURL('/create/prompt');

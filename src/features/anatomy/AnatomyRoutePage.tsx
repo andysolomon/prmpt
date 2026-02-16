@@ -1,16 +1,40 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useNotifications } from '@/components/ui/notifications';
 import { Textarea } from '@/components/ui/textarea';
-import { upsertItem } from '@/lib/library';
+import { createAnatomyLibraryItem, getItem, touchLastUsed, upsertItem } from '@/lib/library';
 import { createDefaultPromptSpec, toCustomPreset, upsertCustomPreset } from '@/lib/prompt';
 
 interface ArchetypeRow {
   name: string;
   trait: string;
+}
+
+interface ArchetypeProfile {
+  id: string;
+  label: string;
+  trait: string;
+  tags?: string[];
+  custom?: boolean;
+}
+
+interface ArchetypeLibraryItem extends ArchetypeRow {
+  id: string;
+  tags: string[];
+  builtIn: boolean;
+  profiles?: ArchetypeProfile[];
+}
+
+interface CustomArchetypeVersion {
+  id: string;
+  archetypeId: string;
+  label: string;
+  trait: string;
+  tags: string[];
 }
 
 interface PromptForgeState {
@@ -143,6 +167,121 @@ const PROMPT_FORGE_PRESETS = [
   { id: 'component-forge', label: 'ComponentForge', description: 'LWC generation and UI quality agent', state: COMPONENT_FORGE_PRESET },
 ] as const;
 
+const ARCHETYPE_VERSIONS_STORAGE_KEY = 'prmpt.anatomy.v1.archetype-versions';
+
+const BUILT_IN_ARCHETYPES: ArchetypeLibraryItem[] = [
+  {
+    id: 'sherlock-holmes',
+    name: 'Sherlock Holmes',
+    trait: 'forensic pattern recognition and edge-case detection',
+    tags: ['analysis', 'debug', 'architecture', 'salesforce'],
+    builtIn: true,
+    profiles: [
+      {
+        id: 'general',
+        label: 'General',
+        trait: 'forensic pattern recognition and edge-case detection',
+      },
+      {
+        id: 'salesforce',
+        label: 'Salesforce',
+        trait:
+          'forensic detection of governor-limit risk, trigger recursion, mixed DML, and missing CRUD/FLS or sharing controls in Apex/Flow designs',
+        tags: ['salesforce', 'apex', 'governor-limits', 'security'],
+      },
+    ],
+  },
+  {
+    id: 'ada-lovelace',
+    name: 'Ada Lovelace',
+    trait: 'elegant, modular, and scalable reasoning',
+    tags: ['architecture', 'design', 'code', 'salesforce'],
+    builtIn: true,
+    profiles: [
+      {
+        id: 'general',
+        label: 'General',
+        trait: 'elegant, modular, and scalable reasoning',
+      },
+      {
+        id: 'salesforce',
+        label: 'Salesforce',
+        trait:
+          'elegant Apex + LWC architecture using selector/service/domain layering, bulk-safe transactions, and cache-aware UI state patterns',
+        tags: ['salesforce', 'lwc', 'apex', 'architecture'],
+      },
+    ],
+  },
+  {
+    id: 'jarvis',
+    name: 'JARVIS',
+    trait: 'seamless orchestration across tools and workflows',
+    tags: ['orchestration', 'automation', 'tools', 'salesforce'],
+    builtIn: true,
+    profiles: [
+      {
+        id: 'general',
+        label: 'General',
+        trait: 'seamless orchestration across tools and workflows',
+      },
+      {
+        id: 'salesforce',
+        label: 'Salesforce',
+        trait:
+          'orchestrates metadata deployments, scratch-org workflows, CI validation, and cross-surface execution across Apex, LWC, Flow, and permission models',
+        tags: ['salesforce', 'sfdx', 'metadata', 'ci-cd'],
+      },
+    ],
+  },
+  {
+    id: 'hermione-granger',
+    name: 'Hermione Granger',
+    trait: 'rigorous standards, documentation, and validation',
+    tags: ['quality', 'testing', 'compliance', 'salesforce'],
+    builtIn: true,
+    profiles: [
+      {
+        id: 'general',
+        label: 'General',
+        trait: 'rigorous standards, documentation, and validation',
+      },
+      {
+        id: 'salesforce',
+        label: 'Salesforce',
+        trait:
+          'strict enforcement of meaningful Apex/Jest coverage, CRUD/FLS and USER_MODE safety, profile/permission boundaries, and release readiness evidence',
+        tags: ['salesforce', 'testing', 'security', 'permissions'],
+      },
+    ],
+  },
+  {
+    id: 'yoda',
+    name: 'Yoda',
+    trait: 'wise tradeoff decisions for long-term maintainability',
+    tags: ['strategy', 'architecture', 'salesforce'],
+    builtIn: true,
+    profiles: [
+      {
+        id: 'general',
+        label: 'General',
+        trait: 'wise tradeoff decisions for long-term maintainability',
+      },
+      {
+        id: 'salesforce',
+        label: 'Salesforce',
+        trait:
+          'pragmatic decisions on declarative vs Apex implementation, async strategy (Queueable/Batch/PE), and org-scale maintainability across multi-team delivery',
+        tags: ['salesforce', 'flow', 'architecture', 'async'],
+      },
+    ],
+  },
+  { id: 'indiana-jones', name: 'Indiana Jones', trait: 'resourceful execution in uncertain and high-pressure contexts', tags: ['execution', 'ops'], builtIn: true },
+  { id: 'deadpool', name: 'Deadpool', trait: 'fast, direct communication with adaptive tone under pressure', tags: ['communication', 'sales'], builtIn: true },
+  { id: 'captain-picard', name: 'Captain Picard', trait: 'clear delegation, escalation discipline, and calm leadership', tags: ['leadership', 'orchestration'], builtIn: true },
+  { id: 'spock', name: 'Spock', trait: 'logic-first prioritization and error analysis', tags: ['analysis', 'error-recovery'], builtIn: true },
+  { id: 'maya-angelou', name: 'Maya Angelou', trait: 'empathetic and precise communication for human-facing outputs', tags: ['communication', 'ux'], builtIn: true },
+] as const;
+
 const ROLE_AREAS = [
   { name: 'Orchestration', description: 'High-level planning & sequencing', lineClass: 'bg-violet-500/15 text-violet-100', chipClass: 'bg-violet-500/20 text-violet-100 border-violet-400/40' },
   { name: 'Delegation', description: 'Task handoff to sub-agents/tools', lineClass: 'bg-pink-500/15 text-pink-100', chipClass: 'bg-pink-500/20 text-pink-100 border-pink-400/40' },
@@ -161,6 +300,56 @@ function cloneState(state: PromptForgeState): PromptForgeState {
     ...state,
     archetypes: state.archetypes.map((row) => ({ ...row })),
   };
+}
+
+function hasWindowStorage(): boolean {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
+function loadCustomArchetypeVersions(): CustomArchetypeVersion[] {
+  if (!hasWindowStorage()) {
+    return [];
+  }
+
+  const raw = window.localStorage.getItem(ARCHETYPE_VERSIONS_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter((item) => typeof item === 'object' && item !== null)
+      .map((item) => item as Partial<CustomArchetypeVersion>)
+      .filter(
+        (item) =>
+          typeof item.id === 'string' &&
+          typeof item.archetypeId === 'string' &&
+          typeof item.label === 'string' &&
+          typeof item.trait === 'string'
+      )
+      .map((item) => ({
+        id: item.id as string,
+        archetypeId: item.archetypeId as string,
+        label: item.label as string,
+        trait: item.trait as string,
+        tags: Array.isArray(item.tags) ? item.tags.filter((tag): tag is string => typeof tag === 'string') : [],
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function persistCustomArchetypeVersions(items: CustomArchetypeVersion[]): void {
+  if (!hasWindowStorage()) {
+    return;
+  }
+
+  window.localStorage.setItem(ARCHETYPE_VERSIONS_STORAGE_KEY, JSON.stringify(items));
 }
 
 function normalizeList(text: string): string[] {
@@ -317,13 +506,269 @@ function renderHighlightedPrompt(promptText: string) {
 
 export function AnatomyRoutePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const anatomyIdParam = searchParams.get('itemId');
+  const { success, error } = useNotifications();
   const [selectedPresetId, setSelectedPresetId] = useState<string>(PROMPT_FORGE_PRESETS[0].id);
   const [state, setState] = useState<PromptForgeState>(cloneState(PROMPT_FORGE_PRESETS[0].state));
+  const [activeLibraryAnatomyId, setActiveLibraryAnatomyId] = useState<string | null>(null);
+  const [customArchetypeVersions, setCustomArchetypeVersions] = useState<CustomArchetypeVersion[]>([]);
   const [exportStatus, setExportStatus] = useState<string>('');
   const [libraryStatus, setLibraryStatus] = useState<string>('');
+  const [archetypeLibraryStatus, setArchetypeLibraryStatus] = useState<string>('');
+  const [archetypeSearch, setArchetypeSearch] = useState('');
+  const [archetypeTagFilter, setArchetypeTagFilter] = useState('all');
+  const [archetypeProfileSelection, setArchetypeProfileSelection] = useState<Record<string, string>>({});
+  const [versionTargetArchetypeId, setVersionTargetArchetypeId] = useState(BUILT_IN_ARCHETYPES[0]?.id ?? '');
+  const [newArchetypeVersionLabel, setNewArchetypeVersionLabel] = useState('');
+  const [newArchetypeTrait, setNewArchetypeTrait] = useState('');
+  const [newArchetypeTags, setNewArchetypeTags] = useState('');
   const [highlightPreview, setHighlightPreview] = useState<boolean>(true);
 
   const promptText = useMemo(() => composePrompt(state), [state]);
+  const archetypeLibrary = useMemo(() => {
+    return BUILT_IN_ARCHETYPES.map((item) => ({
+      ...item,
+      profiles: [
+        ...(item.profiles ?? []),
+        ...customArchetypeVersions
+          .filter((version) => version.archetypeId === item.id)
+          .map((version) => ({
+            id: version.id,
+            label: version.label,
+            trait: version.trait,
+            tags: version.tags,
+            custom: true,
+          })),
+      ],
+    }));
+  }, [customArchetypeVersions]);
+  const archetypeTags = useMemo(() => {
+    const tags = new Set<string>();
+    archetypeLibrary.forEach((item) => item.tags.forEach((tag) => tags.add(tag)));
+    return ['all', ...Array.from(tags).sort()];
+  }, [archetypeLibrary]);
+  const filteredArchetypeLibrary = useMemo(() => {
+    const q = archetypeSearch.trim().toLowerCase();
+    return archetypeLibrary.filter((item) => {
+      const matchesTag = archetypeTagFilter === 'all' ? true : item.tags.includes(archetypeTagFilter);
+      if (!matchesTag) {
+        return false;
+      }
+      if (!q) {
+        return true;
+      }
+
+      const haystack = `${item.name} ${item.trait} ${item.tags.join(' ')}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [archetypeLibrary, archetypeSearch, archetypeTagFilter]);
+
+  useEffect(() => {
+    setCustomArchetypeVersions(loadCustomArchetypeVersions());
+  }, []);
+
+  useEffect(() => {
+    if (!anatomyIdParam) {
+      setActiveLibraryAnatomyId(null);
+      return;
+    }
+
+    const found = getItem(anatomyIdParam);
+    if (!found || found.type !== 'anatomy') {
+      setLibraryStatus('Selected anatomy item was not found in the library.');
+      return;
+    }
+
+    const matchedPreset = found.payload.selectedPresetId
+      ? PROMPT_FORGE_PRESETS.find((preset) => preset.id === found.payload.selectedPresetId)
+      : null;
+
+    setActiveLibraryAnatomyId(found.id);
+    setSelectedPresetId(matchedPreset?.id ?? PROMPT_FORGE_PRESETS[0].id);
+    setState(cloneState(found.payload.forgeState as PromptForgeState));
+    setExportStatus('');
+    setLibraryStatus(`Loaded anatomy "${found.title}" from Library Anatomies.`);
+    touchLastUsed(found.id);
+  }, [anatomyIdParam]);
+
+  const getSelectedArchetypeTrait = (item: ArchetypeLibraryItem): string => {
+    if (!item.profiles || item.profiles.length === 0) {
+      return item.trait;
+    }
+
+    const selectedId = archetypeProfileSelection[item.id] ?? item.profiles[0].id;
+    const selectedProfile = item.profiles.find((profile) => profile.id === selectedId) ?? item.profiles[0];
+    return selectedProfile.trait;
+  };
+
+  const getSelectedArchetypeProfileLabel = (item: ArchetypeLibraryItem): string => {
+    if (!item.profiles || item.profiles.length === 0) {
+      return 'default';
+    }
+
+    const selectedId = archetypeProfileSelection[item.id] ?? item.profiles[0].id;
+    const selectedProfile = item.profiles.find((profile) => profile.id === selectedId) ?? item.profiles[0];
+    return selectedProfile.label;
+  };
+
+  const getSelectedArchetypeProfile = (item: ArchetypeLibraryItem): ArchetypeProfile | undefined => {
+    if (!item.profiles || item.profiles.length === 0) {
+      return undefined;
+    }
+
+    const selectedId = archetypeProfileSelection[item.id] ?? item.profiles[0].id;
+    return item.profiles.find((profile) => profile.id === selectedId) ?? item.profiles[0];
+  };
+
+  const addArchetypeToPrompt = (item: ArchetypeLibraryItem) => {
+    const selectedTrait = getSelectedArchetypeTrait(item);
+    const selectedProfileLabel = getSelectedArchetypeProfileLabel(item);
+
+    setState((current) => {
+      const existingIndex = current.archetypes.findIndex(
+        (row) => row.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+      );
+      if (existingIndex >= 0) {
+        const next = [...current.archetypes];
+        next[existingIndex] = { ...next[existingIndex], trait: selectedTrait };
+        return { ...current, archetypes: next };
+      }
+
+      return {
+        ...current,
+        archetypes: [...current.archetypes, { name: item.name, trait: selectedTrait }],
+      };
+    });
+    setArchetypeLibraryStatus(`Applied "${item.name}" (${selectedProfileLabel}) to current agent archetypes.`);
+  };
+
+  const saveCurrentArchetypeToLibrary = (row: ArchetypeRow) => {
+    const name = row.name.trim();
+    const trait = row.trait.trim();
+    if (!name || !trait) {
+      return;
+    }
+
+    const target = BUILT_IN_ARCHETYPES.find((item) => item.name.toLowerCase() === name.toLowerCase());
+    if (!target) {
+      setArchetypeLibraryStatus('Only versions for existing archetypes can be saved. Create/select a built-in archetype first.');
+      return;
+    }
+
+    setCustomArchetypeVersions((current) => {
+      const exists = current.some(
+        (item) => item.archetypeId === target.id && item.trait.toLowerCase() === trait.toLowerCase()
+      );
+      if (exists) {
+        return current;
+      }
+
+      const existingLabels = new Set(
+        current
+          .filter((item) => item.archetypeId === target.id)
+          .map((item) => item.label.toLowerCase())
+      );
+
+      let label = 'Custom';
+      let suffix = 2;
+      while (existingLabels.has(label.toLowerCase())) {
+        label = `Custom ${suffix}`;
+        suffix += 1;
+      }
+
+      const created: CustomArchetypeVersion = {
+        id: `custom-${Date.now()}`,
+        archetypeId: target.id,
+        label,
+        trait,
+        tags: ['custom'],
+      };
+
+      const next = [...current, created];
+      persistCustomArchetypeVersions(next);
+      return next;
+    });
+    setArchetypeLibraryStatus(`Saved "${name}" as a custom version in Archetype Library.`);
+  };
+
+  const createCustomArchetypeVersion = () => {
+    const label = newArchetypeVersionLabel.trim();
+    const trait = newArchetypeTrait.trim();
+    if (!versionTargetArchetypeId || !label || !trait) {
+      return;
+    }
+
+    const created: CustomArchetypeVersion = {
+      id: `custom-${Date.now()}`,
+      archetypeId: versionTargetArchetypeId,
+      label,
+      trait,
+      tags: normalizeList(newArchetypeTags),
+    };
+
+    setCustomArchetypeVersions((current) => {
+      const exists = current.some(
+        (item) =>
+          item.archetypeId === versionTargetArchetypeId &&
+          item.label.toLowerCase() === label.toLowerCase()
+      );
+      if (exists) {
+        return current;
+      }
+      const next = [...current, created];
+      persistCustomArchetypeVersions(next);
+      return next;
+    });
+    setNewArchetypeVersionLabel('');
+    setNewArchetypeTrait('');
+    setNewArchetypeTags('');
+    setArchetypeLibraryStatus(`Created custom version "${label}".`);
+  };
+
+  const removeCustomArchetypeVersion = (id: string) => {
+    setCustomArchetypeVersions((current) => {
+      const next = current.filter((item) => item.id !== id);
+      persistCustomArchetypeVersions(next);
+      return next;
+    });
+    setArchetypeLibraryStatus('Removed custom archetype version from library.');
+  };
+
+  const saveAnatomyToLibrary = () => {
+    try {
+      const existingItem = activeLibraryAnatomyId ? getItem(activeLibraryAnatomyId) : null;
+      const existing = existingItem && existingItem.type === 'anatomy' ? existingItem : null;
+      const title = `${state.agentName.trim() || 'Agent'} Forge`;
+
+      const next = createAnatomyLibraryItem({
+        id: existing?.id,
+        title,
+        description:
+          state.tagline.trim() ||
+          'Generated in Prompt Forge with role-based anatomy and GitHub context alignment.',
+        tags: existing?.tags ?? ['anatomy', 'prompt-forge', 'agent'],
+        targets: existing?.targets ?? ['claude', 'chatgpt', 'codex'],
+        status: existing?.status ?? 'draft',
+        favorite: existing?.favorite ?? false,
+        archived: existing?.archived ?? false,
+        createdAt: existing?.createdAt,
+        payload: {
+          forgeState: state,
+          promptText,
+          selectedPresetId,
+        },
+      });
+
+      upsertItem(next);
+      setActiveLibraryAnatomyId(next.id);
+      navigate(`/anatomy?itemId=${next.id}`, { replace: true });
+      setLibraryStatus(`Saved "${title}" to Library Anatomies.`);
+      success('Anatomy saved', `"${title}" was saved to library anatomies.`);
+    } catch (saveError) {
+      error('Save failed', saveError instanceof Error ? saveError.message : 'Unable to save anatomy.');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -367,12 +812,20 @@ export function AnatomyRoutePage() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  const spec = buildPromptBuilderSpec(state, promptText);
-                  const presetName = `${state.agentName.trim() || 'Agent'} (Forge)`;
-                  upsertCustomPreset(
-                    toCustomPreset(presetName, `Generated by Prompt Forge on ${new Date().toLocaleDateString()}`, spec)
-                  );
-                  setExportStatus(`Saved "${presetName}" to Prompt Builder custom presets.`);
+                  try {
+                    const spec = buildPromptBuilderSpec(state, promptText);
+                    const presetName = `${state.agentName.trim() || 'Agent'} (Forge)`;
+                    upsertCustomPreset(
+                      toCustomPreset(presetName, `Generated by Prompt Forge on ${new Date().toLocaleDateString()}`, spec)
+                    );
+                    setExportStatus(`Saved "${presetName}" to Prompt Builder custom presets.`);
+                    success('Preset saved', `"${presetName}" was exported to Prompt Builder presets.`);
+                  } catch (saveError) {
+                    error(
+                      'Save failed',
+                      saveError instanceof Error ? saveError.message : 'Unable to export preset.'
+                    );
+                  }
                 }}
               >
                 Export to Prompt Builder Preset
@@ -380,39 +833,9 @@ export function AnatomyRoutePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  const spec = buildPromptBuilderSpec(state, promptText);
-                  const timestamp = Date.now();
-                  const suffix =
-                    typeof crypto !== 'undefined' && 'randomUUID' in crypto
-                      ? crypto.randomUUID()
-                      : Math.random().toString(36).slice(2, 10);
-
-                  upsertItem({
-                    id: `prompt-${suffix}`,
-                    type: 'prompt',
-                    title: `${state.agentName.trim() || 'Agent'} Forge`,
-                    description:
-                      state.tagline.trim() ||
-                      'Generated in Prompt Forge with role-based anatomy and GitHub context alignment.',
-                    tags: ['prompt-forge', 'agent', 'anatomy'],
-                    targets: ['claude', 'chatgpt', 'codex'],
-                    status: 'draft',
-                    favorite: false,
-                    archived: false,
-                    createdAt: timestamp,
-                    updatedAt: timestamp,
-                    lastUsedAt: timestamp,
-                    payload: {
-                      promptSpec: spec,
-                      source: 'prompt-builder',
-                    },
-                  });
-
-                  setLibraryStatus(`Saved "${state.agentName.trim() || 'Agent'} Forge" to Library Prompts.`);
-                }}
+                onClick={saveAnatomyToLibrary}
               >
-                Save Agent to Library
+                Save Anatomy to Library
               </Button>
               <Button type="button" variant="ghost" onClick={() => navigate('/create/prompt')}>
                 Open Prompt Builder
@@ -440,7 +863,7 @@ export function AnatomyRoutePage() {
           <div className="space-y-2 rounded border p-3">
             <p className="text-sm font-medium">Archetypes</p>
             {state.archetypes.map((row, index) => (
-              <div key={`archetype-${index}`} className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <div key={`archetype-${index}`} className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_1fr_auto_auto]">
                 <Input
                   placeholder="Archetype"
                   value={row.name}
@@ -463,8 +886,130 @@ export function AnatomyRoutePage() {
                     })
                   }
                 />
+                <Button type="button" variant="outline" onClick={() => saveCurrentArchetypeToLibrary(row)}>
+                  Save to Library
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() =>
+                    setState((current) => ({
+                      ...current,
+                      archetypes: current.archetypes.filter((_, itemIndex) => itemIndex !== index),
+                    }))
+                  }
+                >
+                  Remove
+                </Button>
               </div>
             ))}
+          </div>
+
+          <div className="space-y-3 rounded border p-3">
+            <p className="text-sm font-medium">Archetype Library</p>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+              <Input
+                placeholder="Search archetypes"
+                value={archetypeSearch}
+                onChange={(event) => setArchetypeSearch(event.target.value)}
+              />
+              <select
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={archetypeTagFilter}
+                onChange={(event) => setArchetypeTagFilter(event.target.value)}
+              >
+                {archetypeTags.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag === 'all' ? 'All tags' : tag}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="max-h-60 space-y-2 overflow-auto rounded border p-2">
+              {filteredArchetypeLibrary.map((item) => (
+                <div key={item.id} className="flex flex-wrap items-start justify-between gap-2 rounded border p-2">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {item.name}
+                      {item.builtIn ? ' · built-in' : ' · custom'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{item.trait}</p>
+                    {item.tags.length > 0 ? (
+                      <p className="mt-1 text-xs text-muted-foreground">Tags: {item.tags.join(', ')}</p>
+                    ) : null}
+                    {item.profiles && item.profiles.length > 0 ? (
+                      <div className="mt-2">
+                        <select
+                          className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                          value={archetypeProfileSelection[item.id] ?? item.profiles[0].id}
+                          onChange={(event) =>
+                            setArchetypeProfileSelection((current) => ({
+                              ...current,
+                              [item.id]: event.target.value,
+                            }))
+                          }
+                        >
+                          {item.profiles.map((profile) => (
+                            <option key={profile.id} value={profile.id}>
+                              {profile.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addArchetypeToPrompt(item)}>
+                      Add
+                    </Button>
+                    {getSelectedArchetypeProfile(item)?.custom ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeCustomArchetypeVersion(getSelectedArchetypeProfile(item)?.id ?? '')}
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+              <select
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={versionTargetArchetypeId}
+                onChange={(event) => setVersionTargetArchetypeId(event.target.value)}
+              >
+                {BUILT_IN_ARCHETYPES.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <Input
+                placeholder="Version label (e.g. Salesforce)"
+                value={newArchetypeVersionLabel}
+                onChange={(event) => setNewArchetypeVersionLabel(event.target.value)}
+              />
+              <Input
+                placeholder="Version trait"
+                value={newArchetypeTrait}
+                onChange={(event) => setNewArchetypeTrait(event.target.value)}
+              />
+              <Textarea
+                rows={2}
+                placeholder="Tags (one per line)"
+                value={newArchetypeTags}
+                onChange={(event) => setNewArchetypeTags(event.target.value)}
+              />
+              <Button type="button" variant="outline" onClick={createCustomArchetypeVersion}>
+                Add Archetype Version
+              </Button>
+            </div>
           </div>
 
           <div>
@@ -543,6 +1088,11 @@ export function AnatomyRoutePage() {
           {libraryStatus ? (
             <p className="rounded border border-sky-900 bg-sky-950/40 px-3 py-2 text-sm text-sky-200">
               {libraryStatus}
+            </p>
+          ) : null}
+          {archetypeLibraryStatus ? (
+            <p className="rounded border border-purple-900 bg-purple-950/40 px-3 py-2 text-sm text-purple-200">
+              {archetypeLibraryStatus}
             </p>
           ) : null}
         </CardContent>

@@ -19,7 +19,10 @@ const Layout = ({ children, className }: LayoutProps) => {
   const navItems = [
     { label: 'Library', to: '/library' },
     { label: 'Prompts', to: '/library/prompts' },
+    { label: 'Anatomies', to: '/library/anatomies' },
     { label: 'Prompt Builder', to: '/create/prompt' },
+    { label: 'Anatomy', to: '/anatomy' },
+    { label: 'Admin', to: '/admin/storage' },
     { label: 'UI Builder', to: '/create/ui' },
     { label: 'Skills', to: '/library/skills' },
   ];

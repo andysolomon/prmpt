@@ -1,10 +1,10 @@
 # Prompt Builder Refactor Progress
-Last updated: 2026-02-08 12:30
+Last updated: 2026-02-16 11:40
 
 ## Overall
 - Status: done
-- Current phase: Sprint 6 implementation
-- Next action: Validate and commit Sprint 6 features.
+- Current phase: Sprint 7 implementation
+- Next action: Validate and commit Sprint 7 features.
 
 ## Milestones
 - [x] M1: PromptSpec + Zod schema + defaults
@@ -14,6 +14,7 @@ Last updated: 2026-02-08 12:30
 - [x] M5: Wizard UI + preview + lint panel
 - [x] M6: Tests (domain + UI smoke)
 - [x] M7: Docs alignment (README + plans)
+- [x] M8: Sprint 7 Library + Skills + UI Builder scaffolding
 
 ## Detailed Tasks
 - [x] Create `src/lib/prompt` modules with Zod schemas and exports.
@@ -35,6 +36,15 @@ Last updated: 2026-02-08 12:30
 - [x] Add snippet library insertion for constraints/output requirements.
 - [x] Add input summarizer helper template for large inputs.
 - [x] Bump semantic version for Sprint 6 release (`v1.1.0`).
+- [x] Add library dashboard routes and library-first home flow.
+- [x] Implement unified library storage (`prompt` + `skill`) with migration from legacy prompt keys.
+- [x] Add Skills list, detail, edit, duplicate, favorite, delete flows.
+- [x] Add deterministic Skill export formatter (`SKILL.md` style) with copy/download support.
+- [x] Add UI Prompt Builder module scaffolding (`/create/ui`, `/:builderType`) with `UiPromptSpec`.
+- [x] Add deterministic `UiPromptSpec -> PromptSpec` bridge and prompt-save integration.
+- [x] Add Sprint 7 unit tests for library storage, skill formatter, and UI bridge.
+- [x] Update app routing and nav for library/skills/ui-builder flows.
+- [x] Bump semantic version for Sprint 7 release (`v1.2.0`).
 
 ## Blockers
 - None

@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
 import { cn } from '@/lib/utils';
 
 interface LayoutProps {
@@ -15,9 +17,18 @@ const Layout = ({ children, className }: LayoutProps) => {
             <h1 className="text-xl font-bold">Prompt Builder</h1>
           </div>
           <nav className="flex items-center gap-4">
-            <button className="text-sm font-medium hover:underline">Home</button>
-            <button className="text-sm font-medium hover:underline">Templates</button>
-            <button className="text-sm font-medium hover:underline">History</button>
+            <Link className="text-sm font-medium hover:underline" to="/library">
+              Library
+            </Link>
+            <Link className="text-sm font-medium hover:underline" to="/create/prompt">
+              Prompt Builder
+            </Link>
+            <Link className="text-sm font-medium hover:underline" to="/create/ui">
+              UI Builder
+            </Link>
+            <Link className="text-sm font-medium hover:underline" to="/library/skills">
+              Skills
+            </Link>
           </nav>
         </div>
       </header>

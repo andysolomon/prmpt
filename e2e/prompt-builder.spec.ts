@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Prompt Builder', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/create/prompt');
   });
 
   test('renders wizard shell and preview/lint panels', async ({ page }) => {
@@ -32,5 +32,36 @@ test.describe('Prompt Builder', () => {
     await expect(page.getByRole('heading', { name: 'Import / Export / Share' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Download PromptSpec JSON' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copy share URL' })).toBeVisible();
+  });
+
+  test('clears draft via New Prompt action', async ({ page }) => {
+    const goalInput = page.getByLabel('Goal');
+    await goalInput.fill('Ship profile page with full test coverage');
+    await expect(page.locator('pre').first()).toContainText('Ship profile page with full test coverage');
+
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.getByRole('button', { name: 'New Prompt' }).click();
+
+    await expect(goalInput).toHaveValue('');
+    await expect(page.locator('pre').first()).not.toContainText('Ship profile page with full test coverage');
+  });
+});
+
+test.describe('Sprint 7 Library and UI Builder', () => {
+  test('lands on library dashboard by default and can create skill', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Library Dashboard' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'New Skill' }).first().click();
+    await expect(page.getByRole('heading', { name: 'Untitled Skill' })).toBeVisible();
+  });
+
+  test('opens UI builder landing and scaffold route', async ({ page }) => {
+    await page.goto('/create/ui');
+    await expect(page.getByRole('heading', { name: 'UI Prompt Builder' })).toBeVisible();
+
+    await page.getByRole('link', { name: 'Start' }).first().click();
+    await expect(page.getByRole('heading', { name: /layout Builder/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Prompt Preview' })).toBeVisible();
   });
 });

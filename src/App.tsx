@@ -1,17 +1,35 @@
+import { useEffect } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
 import Layout from './components/layout';
-import { PromptBuilderPage } from './components/prompt-builder';
+import { migrateLegacyPromptStorageIfNeeded } from './lib/library';
+import { LibraryDashboardPage } from './features/library/LibraryDashboardPage';
+import { SkillsListPage } from './features/library/SkillsListPage';
+import { SkillDetailPage } from './features/library/SkillDetailPage';
+import { CreateSkillRoute } from './features/library/CreateSkillRoute';
+import { PromptBuilderRoutePage } from './features/prompt/PromptBuilderRoutePage';
+import { UiBuilderLandingPage } from './features/ui-builder/UiBuilderLandingPage';
+import { UiBuilderScaffoldPage } from './features/ui-builder/UiBuilderScaffoldPage';
 
 function App() {
+  useEffect(() => {
+    migrateLegacyPromptStorageIfNeeded();
+  }, []);
+
   return (
     <Layout>
       <div className="mx-auto max-w-[1400px]">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Prompt Builder</h1>
-          <p className="mt-2 text-muted-foreground">
-            Build structured prompts with a wizard, live exports, and lint feedback.
-          </p>
-        </div>
-        <PromptBuilderPage />
+        <Routes>
+          <Route path="/" element={<Navigate to="/library" replace />} />
+          <Route path="/library" element={<LibraryDashboardPage />} />
+          <Route path="/library/skills" element={<SkillsListPage />} />
+          <Route path="/library/skills/:id" element={<SkillDetailPage />} />
+          <Route path="/create/skill" element={<CreateSkillRoute />} />
+          <Route path="/create/prompt" element={<PromptBuilderRoutePage />} />
+          <Route path="/create/ui" element={<UiBuilderLandingPage />} />
+          <Route path="/create/ui/:builderType" element={<UiBuilderScaffoldPage />} />
+          <Route path="*" element={<Navigate to="/library" replace />} />
+        </Routes>
       </div>
     </Layout>
   );

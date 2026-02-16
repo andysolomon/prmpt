@@ -53,20 +53,56 @@ bun run dev
 Type check:
 
 ```bash
-npm run type-check
+bun run type-check
 ```
 
 Lint:
 
 ```bash
-npm run lint
+bun run lint
 ```
 
 Tests (watchman disabled in restricted environments):
 
 ```bash
-npm test -- --runInBand --watchman=false
+bun run test -- --runInBand --watchman=false
 ```
+
+## Playwright E2E
+
+Run full Playwright suite (Desktop Chromium + Mobile Chromium):
+
+```bash
+bun run test:e2e
+```
+
+Run headed:
+
+```bash
+bun run test:e2e:headed
+```
+
+Run one project only:
+
+```bash
+bunx playwright test --project=chromium
+bunx playwright test --project=mobile-chromium
+```
+
+Run one spec file:
+
+```bash
+bunx playwright test e2e/prompt-forge.spec.ts
+```
+
+Debug mode:
+
+```bash
+bunx playwright test --debug
+```
+
+Note:
+- The mobile navigation drawer test is mobile-only and is intentionally skipped in the desktop project.
 
 ## Architecture
 

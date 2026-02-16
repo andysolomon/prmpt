@@ -38,7 +38,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
                 The app hit an unexpected error. Your saved draft is still in local storage.
               </p>
               {this.state.errorMessage && (
-                <pre className="rounded border bg-slate-50 p-3 text-xs">{this.state.errorMessage}</pre>
+                <pre className="rounded border bg-muted p-3 text-xs text-foreground">{this.state.errorMessage}</pre>
               )}
               <Button type="button" onClick={() => window.location.reload()}>
                 Reload app

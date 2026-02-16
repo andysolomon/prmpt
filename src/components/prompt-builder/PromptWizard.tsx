@@ -77,7 +77,11 @@ export function PromptWizard({
               <button
                 key={wizardStep.id}
                 className={`flex w-full items-center justify-between rounded border px-2 py-2 text-left text-sm transition-colors ${
-                  isCurrent ? 'border-slate-900 bg-accent' : isComplete ? 'border-emerald-300 bg-emerald-50' : ''
+                  isCurrent
+                    ? 'border-primary/40 bg-accent text-accent-foreground'
+                    : isComplete
+                      ? 'border-emerald-700/60 bg-emerald-950/40 text-emerald-100'
+                      : 'border-border bg-card text-foreground hover:bg-accent/40'
                 }`}
                 onClick={() => onStepChange(wizardStep.id)}
                 type="button"
@@ -85,7 +89,7 @@ export function PromptWizard({
                 <span>{wizardStep.title}</span>
                 <span
                   className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-xs ${
-                    isComplete ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                    isComplete ? 'bg-emerald-600 text-white' : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   {isComplete ? '✓' : index + 1}
@@ -103,7 +107,7 @@ export function PromptWizard({
         </CardHeader>
         <CardContent className="space-y-5">
           {stepIssues.length > 0 && (
-            <div className="rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
+            <div className="rounded border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-100">
               <p className="font-medium">Step guidance</p>
               <ul className="mt-1 list-disc pl-4">
                 {stepIssues.map((issue) => (

@@ -65,8 +65,8 @@ export function PortabilityPanel({
           URL sharing uses an encoded `pb` query parameter. JSON import validates schema before replacing draft.
         </p>
 
-        <div className="space-y-3 rounded border border-red-300 bg-red-50 p-3">
-          <p className="text-sm font-medium text-red-800">Danger Zone</p>
+        <div className="space-y-3 rounded border border-red-700/60 bg-red-950/30 p-3">
+          <p className="text-sm font-medium text-red-200">Danger Zone</p>
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -87,8 +87,8 @@ export function PortabilityPanel({
             </Button>
           </div>
 
-          <div className="space-y-2 rounded border border-red-200 bg-white p-3">
-            <p className="text-sm text-red-900">
+          <div className="space-y-2 rounded border border-red-700/50 bg-background p-3">
+            <p className="text-sm text-red-100">
               Clear all local data (draft + custom presets). Type <code>RESET</code> to enable.
             </p>
             <input

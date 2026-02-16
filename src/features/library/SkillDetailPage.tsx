@@ -228,6 +228,17 @@ export function SkillDetailPage() {
                 />
               </div>
             </div>
+
+            <div className="rounded border p-3">
+              <p className="text-sm font-medium">Import (Coming Soon)</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                GitHub/remote import will land in a future sprint. Provenance tracking placeholder:
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">Provenance: not imported</p>
+              <Button className="mt-2" size="sm" variant="outline" disabled>
+                Import
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -509,7 +520,11 @@ export function SkillDetailPage() {
             <CardTitle>Export</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <textarea className="min-h-[360px] w-full rounded-md border border-input bg-slate-50 p-3 font-mono text-xs" value={exportText} readOnly />
+            <textarea
+              className="min-h-[360px] w-full rounded-md border border-input bg-muted p-3 font-mono text-xs text-foreground"
+              value={exportText}
+              readOnly
+            />
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"

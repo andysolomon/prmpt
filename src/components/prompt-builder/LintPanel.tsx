@@ -27,10 +27,10 @@ export function LintPanel({ issues }: LintPanelProps) {
             key={issue.id}
             className={`rounded border p-2 ${
               issue.severity === 'error'
-                ? 'border-red-300 bg-red-50'
+                ? 'border-red-700/60 bg-red-950/30 text-red-100'
                 : issue.severity === 'warning'
-                  ? 'border-yellow-300 bg-yellow-50'
-                  : 'border-slate-200'
+                  ? 'border-amber-700/60 bg-amber-950/30 text-amber-100'
+                  : 'border-border bg-muted'
             }`}
           >
             <p className="font-medium">

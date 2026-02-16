@@ -38,7 +38,7 @@ export function InputsStep({ spec, onChange }: InputsStepProps) {
       </div>
 
       {totalChars > SUMMARY_HINT_THRESHOLD && (
-        <p className="rounded border border-yellow-300 bg-yellow-50 p-3 text-sm">
+        <p className="rounded border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-100">
           Large input detected ({totalChars} chars). Consider summarizing logs/code before full raw content.
         </p>
       )}

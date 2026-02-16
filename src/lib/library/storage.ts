@@ -15,6 +15,7 @@ import {
   SkillLibraryItem,
   createDefaultSkillSpec,
 } from './schema';
+import { getCloudSyncRuntime } from '@/lib/sync/runtime';
 
 const LIBRARY_ITEMS_KEY = 'prmpt.library.v1.items';
 const LIBRARY_META_KEY = 'prmpt.library.v1.meta';
@@ -776,6 +777,23 @@ function writeItems(items: LibraryItem[]): void {
   window.localStorage.setItem(LIBRARY_ITEMS_KEY, JSON.stringify(items));
 }
 
+export function replaceAllItems(nextItems: LibraryItem[]): void {
+  const parsed = nextItems.map((item) => LibraryItemSchema.parse(item));
+  writeItems(parsed);
+  emitChange();
+}
+
+function mirrorCloudSafely(action: (runtime: NonNullable<ReturnType<typeof getCloudSyncRuntime>>) => Promise<void>): void {
+  const runtime = getCloudSyncRuntime();
+  if (!runtime || !runtime.isActive()) {
+    return;
+  }
+
+  void action(runtime).catch(() => {
+    // Cloud errors are surfaced by sync UI status and should not break local-first writes.
+  });
+}
+
 function createPromptItemFromPromptSpec(specTitle: string, specDescription: string, promptSpec: unknown): PromptLibraryItem | null {
   const parsed = PromptSpecSchema.safeParse(promptSpec);
   if (!parsed.success) {
@@ -1018,6 +1036,7 @@ export function upsertItem(item: LibraryItem): LibraryItem {
 
   writeItems(items);
   emitChange();
+  mirrorCloudSafely((runtime) => runtime.onUpsert(parsed));
   return parsed;
 }
 
@@ -1025,6 +1044,7 @@ export function deleteItem(id: string): void {
   const next = readItems().filter((item) => item.id !== id);
   writeItems(next);
   emitChange();
+  mirrorCloudSafely((runtime) => runtime.onDelete(id));
 }
 
 export function touchLastUsed(id: string): void {
@@ -1040,6 +1060,7 @@ export function touchLastUsed(id: string): void {
 
   writeItems(next);
   emitChange();
+  mirrorCloudSafely((runtime) => runtime.onTouchLastUsed(id));
 }
 
 export function toggleFavorite(id: string): void {
@@ -1056,6 +1077,7 @@ export function toggleFavorite(id: string): void {
 
   writeItems(next);
   emitChange();
+  mirrorCloudSafely((runtime) => runtime.onToggleFavorite(id));
 }
 
 export function toggleArchived(id: string): void {
@@ -1072,6 +1094,7 @@ export function toggleArchived(id: string): void {
 
   writeItems(next);
   emitChange();
+  mirrorCloudSafely((runtime) => runtime.onToggleArchived(id));
 }
 
 export function duplicateItem(id: string): LibraryItem | null {

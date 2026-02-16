@@ -16,12 +16,14 @@ import { UiBuilderScaffoldPage } from './features/ui-builder/UiBuilderScaffoldPa
 import { AnatomyRoutePage } from './features/anatomy/AnatomyRoutePage';
 import { AdminStoragePage } from './features/admin/AdminStoragePage';
 import { NotificationsProvider } from './components/ui/notifications';
+import { useCloudSyncRuntime } from './lib/sync/useCloudSyncRuntime';
 
 function App() {
   useEffect(() => {
     migrateLegacyPromptStorageIfNeeded();
     seedDefaultExampleSkillsIfMissing();
   }, []);
+  useCloudSyncRuntime();
 
   return (
     <NotificationsProvider>

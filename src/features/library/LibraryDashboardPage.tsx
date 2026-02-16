@@ -11,6 +11,7 @@ import {
 } from '@/lib/library';
 
 import { useLibraryItems } from './useLibraryItems';
+import { CloudSyncPanel } from './CloudSyncPanel';
 
 function itemPath(item: LibraryItem): string {
   if (item.type === 'skill') {
@@ -85,6 +86,8 @@ export function LibraryDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      <CloudSyncPanel />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>

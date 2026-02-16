@@ -147,3 +147,46 @@ Edit `src/lib/prompt/lint.ts` in `lintPromptSpec()` and add a new `LintIssue` co
 ### Add output format logic
 
 Add a formatter in `src/lib/prompt/formatters/` and wire it into `PreviewPanel.tsx`.
+
+## Cloud Sync (Sprint 11 C1)
+
+Optional cloud sync is available using Convex + Clerk.
+
+### Environment
+
+Create `.env.local`:
+
+```bash
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+VITE_CONVEX_URL=your_convex_url
+CLERK_JWT_ISSUER_DOMAIN=your-clerk-domain
+```
+
+Do not commit real keys. Use `.env.example` as the template.
+
+### Backend setup
+
+```bash
+bun run convex
+```
+
+Start local Convex dev once configured:
+
+```bash
+bun run dev:backend
+```
+
+### Frontend
+
+```bash
+bun run dev
+```
+
+Open Library Dashboard and use the **Cloud Sync** panel.
+- Signed out: sync cannot be enabled.
+- Signed in: **Enable Cloud Sync** migrates local items and hydrates from Convex.
+
+Supported synced library item types:
+- `prompt`
+- `skill`
+- `anatomy`

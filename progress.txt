@@ -1,56 +1,32 @@
-# Prompt Builder Refactor Progress
-Last updated: 2026-02-16 11:40
+# Sprint 11 C1 Progress
+Last updated: 2026-02-16
 
 ## Overall
-- Status: done
-- Current phase: Sprint 7 implementation
-- Next action: Validate and commit Sprint 7 features.
+- Status: done (implementation baseline complete)
+- Current phase: wrap-up and verification
+- Goal: Optional cloud sync with local-first fallback for prompt/skill/anatomy
 
-## Milestones
-- [x] M1: PromptSpec + Zod schema + defaults
-- [x] M2: Formatters (chat/api/json)
-- [x] M3: Linter + rules
-- [x] M4: Presets + localStorage
-- [x] M5: Wizard UI + preview + lint panel
-- [x] M6: Tests (domain + UI smoke)
-- [x] M7: Docs alignment (README + plans)
-- [x] M8: Sprint 7 Library + Skills + UI Builder scaffolding
+## Completed
+- [x] Added first-class `anatomy` library type support in local model
+- [x] Added optional runtime auth provider (`RuntimeAuthProvider`) with Clerk integration
+- [x] Added sync settings persistence (`prmpt.sync.v1.settings`)
+- [x] Added cloud sync runtime registry and storage write-through mirror hooks
+- [x] Added Convex client bridge for list/upsert/delete/toggle/touch + migration helper
+- [x] Added app-level sync bootstrap/hydration behavior
+- [x] Added Cloud Sync panel to Library Dashboard
+- [x] Added Convex backend scaffolding (`convex/schema.ts`, `convex/libraryItems.ts`, `convex/auth.config.ts`)
+- [x] Added `.env.example` placeholders for Clerk + Convex
+- [x] Updated README with cloud sync setup and usage notes
+- [x] Type-check passed
+- [x] Playwright regression subset passed
+- [x] Added `debrief.md` final summary
 
-## Detailed Tasks
-- [x] Create `src/lib/prompt` modules with Zod schemas and exports.
-- [x] Implement formatter functions.
-- [x] Implement lint engine and lint issue structure.
-- [x] Implement built-in presets and localStorage helpers.
-- [x] Replace monolithic builder with wizard architecture.
-- [x] Add Jest setup + tests.
-- [x] Update README and planning docs.
-- [x] Add step completion visuals and inline step-level lint guidance.
-- [x] Add preset apply undo UX.
-- [x] Install Playwright via bun and add e2e suite.
-- [x] Add example gallery with loadable PromptSpec examples.
-- [x] Add keyboard shortcuts for step navigation and copy export.
-- [x] Add error boundary fallback UI.
-- [x] Apply semantic versioning for Sprint 1-5 release (`v1.0.0`).
-- [x] Add PromptSpec URL share/load support.
-- [x] Add PromptSpec JSON import/export file flow.
-- [x] Add snippet library insertion for constraints/output requirements.
-- [x] Add input summarizer helper template for large inputs.
-- [x] Bump semantic version for Sprint 6 release (`v1.1.0`).
-- [x] Add library dashboard routes and library-first home flow.
-- [x] Implement unified library storage (`prompt` + `skill`) with migration from legacy prompt keys.
-- [x] Add Skills list, detail, edit, duplicate, favorite, delete flows.
-- [x] Add deterministic Skill export formatter (`SKILL.md` style) with copy/download support.
-- [x] Add UI Prompt Builder module scaffolding (`/create/ui`, `/:builderType`) with `UiPromptSpec`.
-- [x] Add deterministic `UiPromptSpec -> PromptSpec` bridge and prompt-save integration.
-- [x] Add Sprint 7 unit tests for library storage, skill formatter, and UI bridge.
-- [x] Update app routing and nav for library/skills/ui-builder flows.
-- [x] Bump semantic version for Sprint 7 release (`v1.2.0`).
+## Remaining / Next Sprint
+- [ ] Add queue/retry policy for offline writes beyond basic error recording
+- [ ] Add dedicated Clerk-authenticated sync e2e tests
+- [ ] Add Convex server tests for auth isolation + LWW edge cases
 
-## Blockers
-- None
-
-## Notes
-- Defaults use PromptSpec schema version 1.
-- Unknown/corrupt localStorage data falls back to default PromptSpec.
-- Jest runs with `--watchman=false` in restricted environments.
-- Playwright e2e runs with `bun run test:e2e`.
+## Risks / Notes
+- Convex backend requires generated files at runtime (`bun run dev:backend`).
+- Clerk/Convex env vars must be set in `.env.local`.
+- Local-first behavior remains fallback when sync disabled or unavailable.
